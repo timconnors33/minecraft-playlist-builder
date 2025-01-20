@@ -2,14 +2,26 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import json
+import re
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
 CUR_VANILLA_SEASONS_SPAN_ID = "Current_Vanilla_Seasons"
+JOINED_THIS_SEASON_SPAN_ID = "Joined_This_Season"
+RETURNED_FROM_PREV_SEASON_SPAN_ID = "Returned_From_Previous_Season"
+SEASON_1_HERMITS_SPAN_ID = "Hermits"
+HERMITS_HEADER_SPAN_ID = "Hermits"
+
 
 class SeasonLink():
     def __init__(self, internal_link, text):
         self.internal_link = internal_link
         self.text = text
+
+
+class SeasonAppearance():
+    def __init__(self, youtube_internal_link, link_type):
+        self.youtube_internal_link = youtube_internal_link
+        self.link_type = link_type
 
 '''
 def writeSeasonAppearancesToFile():
@@ -18,8 +30,40 @@ def writeSeasonAppearancesToFile():
 def parseWikiPages():
     season_links = parseSeriesPage()
     for season_link in season_links:
-        print(json.dumps(season_link.__dict__))
-        parseSeasonPage(season_page_internal_link=season_link.internal_link)
+        print(season_link.text)
+        season_appearances = parseSeasonPage(season_page_internal_link=season_link.internal_link)
+        for season_appearance in season_appearances:
+            print(json.dumps(season_appearance.__dict__))
+
+def parseSeasonTableBodies(table_bodies):
+    youtube_link_pattern = re.compile(r'https://youtube.com/|https://www.youtube.com/|http://www.youtube.com/')
+    season_appearances = []
+    for table_body in table_bodies:
+        anchors = table_body.find_all('a')
+        for anchor in anchors:
+            if anchor.has_attr('href') and youtube_link_pattern.match(anchor['href']):
+                youtube_internal_link = anchor['href'] \
+                    .replace('https://youtube.com/', '') \
+                    .replace('https://www.youtube.com/', '') \
+                    .replace('http://www.youtube.com/', '')
+                link_type = 'channel'
+                if 'list=PL' in youtube_internal_link:
+                    link_type = 'playlist'
+                season_appearance = SeasonAppearance(youtube_internal_link=youtube_internal_link, link_type=link_type)
+                season_appearances.append(season_appearance)
+    return season_appearances
+
+def getHermitTableBodies(soup, season_link):
+    table_bodies = []
+    hermits_header_span = soup.find(id=HERMITS_HEADER_SPAN_ID)
+    if season_link == "Season_1":
+        table_bodies.append(hermits_header_span.find_next('tbody'))
+    else:
+        span_text_pattern = re.compile(r'Returning|Returned|Joined This Season|From Previous')
+        matching_spans = hermits_header_span.find_all_next(string=span_text_pattern)
+        for matching_span in matching_spans:
+            table_bodies.append(matching_span.find_next('tbody'))
+    return table_bodies
 
 def parseSeasonPage(season_page_internal_link):
     filepath = './data/' + season_page_internal_link + '.json'
@@ -31,6 +75,10 @@ def parseSeasonPage(season_page_internal_link):
 
     with open(filepath, 'r') as f:
         htmlData = json.load(f)
+    soup = BeautifulSoup(htmlData, 'html.parser')
+    table_bodies = getHermitTableBodies(soup=soup, season_link=season_page_internal_link)
+    season_appearances = parseSeasonTableBodies(table_bodies=table_bodies)
+    return season_appearances
 
 
 def parseSeriesTable(soup, series_table_id):
