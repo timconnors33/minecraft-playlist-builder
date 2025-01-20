@@ -6,9 +6,6 @@ import re
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
 CUR_VANILLA_SEASONS_SPAN_ID = "Current_Vanilla_Seasons"
-JOINED_THIS_SEASON_SPAN_ID = "Joined_This_Season"
-RETURNED_FROM_PREV_SEASON_SPAN_ID = "Returned_From_Previous_Season"
-SEASON_1_HERMITS_SPAN_ID = "Hermits"
 HERMITS_HEADER_SPAN_ID = "Hermits"
 
 
@@ -26,6 +23,19 @@ class SeasonAppearance():
 '''
 def writeSeasonAppearancesToFile():
 '''
+
+def getSoup(filepath, uri):
+    if not os.path.exists(filepath):
+        r = requests.get(uri)
+        htmlData = r.json()['parse']['text']['*']
+        with open(filepath, 'w') as f:
+            json.dump(htmlData, f)
+    else:
+        with open(filepath, 'r') as f:
+            htmlData = json.load(f)
+        soup = BeautifulSoup(htmlData, 'html.parser')
+
+    return soup
 
 def parseWikiPages():
     season_links = parseSeriesPage()
@@ -51,6 +61,7 @@ def parseSeasonTableBodies(table_bodies):
                     link_type = 'playlist'
                 season_appearance = SeasonAppearance(youtube_internal_link=youtube_internal_link, link_type=link_type)
                 season_appearances.append(season_appearance)
+
     return season_appearances
 
 def getHermitTableBodies(soup, season_link):
@@ -63,21 +74,16 @@ def getHermitTableBodies(soup, season_link):
         matching_spans = hermits_header_span.find_all_next(string=span_text_pattern)
         for matching_span in matching_spans:
             table_bodies.append(matching_span.find_next('tbody'))
+
     return table_bodies
 
 def parseSeasonPage(season_page_internal_link):
-    filepath = './data/' + season_page_internal_link + '.json'
-    if not os.path.exists(filepath):
-        r = requests.get(f"https://hermitcraft.fandom.com/api.php?action=parse&page={season_page_internal_link}&format=json")
-        htmlData = r.json()['parse']['text']['*']
-        with open(filepath, 'w') as f:
-            json.dump(htmlData, f)
+    filepath = './data/hermitcraft/wiki-pages' + season_page_internal_link + '.json'
+    soup = getSoup(filepath=filepath, uri=f"https://hermitcraft.fandom.com/api.php?action=parse&page={season_page_internal_link}&format=json")
 
-    with open(filepath, 'r') as f:
-        htmlData = json.load(f)
-    soup = BeautifulSoup(htmlData, 'html.parser')
     table_bodies = getHermitTableBodies(soup=soup, season_link=season_page_internal_link)
     season_appearances = parseSeasonTableBodies(table_bodies=table_bodies)
+
     return season_appearances
 
 
@@ -89,6 +95,7 @@ def parseSeriesTable(soup, series_table_id):
         if anchor.has_attr('href') and anchor['href'].startswith('/wiki/'):
             season_link = SeasonLink(internal_link=anchor['href'].replace('/wiki/', ''), text=anchor.get_text())
             list_of_links.append(season_link)
+
     return list_of_links
 
 def parseSeriesPage():
@@ -98,17 +105,8 @@ def parseSeriesPage():
     from the wiki in order to stay up-to-date. Or just remove this functionality in production and run
     the script at a regular time interval. This is mostly only included for development purposes.
     """
-    filepath = './data/series-wiki-page.json'
-    if not os.path.exists(filepath):
-        r = requests.get("https://hermitcraft.fandom.com/api.php?action=parse&page=Series&format=json")
-        htmlData = r.json()['parse']['text']['*']
-        with open(filepath, 'w') as f:
-            json.dump(htmlData, f)
 
-    with open(filepath, 'r') as f:
-        htmlData = json.load(f)
-
-    soup = BeautifulSoup(htmlData, 'html.parser')
+    soup = getSoup(filepath='./data/hermitcraft/wiki-pages/series-wiki-page.json', uri="https://hermitcraft.fandom.com/api.php?action=parse&page=Series&format=json")
     season_links = []
     past_season_links = parseSeriesTable(soup=soup, series_table_id=PAST_VANILLA_SEASONS_SPAN_ID)
     cur_season_links = parseSeriesTable(soup=soup, series_table_id=CUR_VANILLA_SEASONS_SPAN_ID)
