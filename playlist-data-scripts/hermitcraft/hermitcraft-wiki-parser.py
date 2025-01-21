@@ -15,10 +15,16 @@ class SeasonLink():
         self.text = text
 
 
-class SeasonAppearance():
+class SeasonAppearanceLink():
     def __init__(self, youtube_internal_link, link_type):
         self.youtube_internal_link = youtube_internal_link
         self.link_type = link_type
+        self.season = None
+
+class SeasonAppearanceJson():
+    def __init__(self, channel, season):
+        self.channel = channel
+        self.season = season
 
 '''
 def writeSeasonAppearancesToFile():
@@ -33,17 +39,22 @@ def getSoup(filepath, uri):
     else:
         with open(filepath, 'r') as f:
             htmlData = json.load(f)
-        soup = BeautifulSoup(htmlData, 'html.parser')
+    soup = BeautifulSoup(htmlData, 'html.parser')
 
     return soup
 
 def parseWikiPages():
+    season_appearances = []
     season_links = parseSeriesPage()
     for season_link in season_links:
+        cur_season_appearance_links = parseSeasonPage(season_page_internal_link=season_link.internal_link)
         print(season_link.text)
-        season_appearances = parseSeasonPage(season_page_internal_link=season_link.internal_link)
-        for season_appearance in season_appearances:
-            print(json.dumps(season_appearance.__dict__))
+        for cur_season_appearance_link in cur_season_appearance_links:
+            cur_season_appearance_link.season = season_link.text
+            season_appearances.append(cur_season_appearance_link)
+            print(json.dumps(cur_season_appearance_link.__dict__))
+
+            
 
 def parseSeasonTableBodies(table_bodies):
     youtube_link_pattern = re.compile(r'https://youtube.com/|https://www.youtube.com/|http://www.youtube.com/')
@@ -59,7 +70,7 @@ def parseSeasonTableBodies(table_bodies):
                 link_type = 'channel'
                 if 'list=PL' in youtube_internal_link:
                     link_type = 'playlist'
-                season_appearance = SeasonAppearance(youtube_internal_link=youtube_internal_link, link_type=link_type)
+                season_appearance = SeasonAppearanceLink(youtube_internal_link=youtube_internal_link, link_type=link_type)
                 season_appearances.append(season_appearance)
 
     return season_appearances
