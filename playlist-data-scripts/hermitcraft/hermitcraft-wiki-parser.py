@@ -4,6 +4,7 @@ import os
 import json
 import re
 
+
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
 CUR_VANILLA_SEASONS_SPAN_ID = "Current_Vanilla_Seasons"
 HERMITS_HEADER_SPAN_ID = "Hermits"
@@ -21,14 +22,20 @@ class SeasonAppearanceLink():
         self.link_type = link_type
         self.season = None
 
+
 class SeasonAppearanceJson():
     def __init__(self, channel, season):
         self.channel = channel
         self.season = season
 
-'''
+
 def writeSeasonAppearancesToFile():
-'''
+    season_appearances = parseWikiPages()
+    filepath = './data/hermitcraft/season-appearances.json'
+    if not os.path.exists(filepath):
+        with open(filepath, 'w') as f:
+            json.dump(season_appearances, f)
+
 
 def getSoup(filepath, uri):
     if not os.path.exists(filepath):
@@ -43,6 +50,7 @@ def getSoup(filepath, uri):
 
     return soup
 
+
 def parseWikiPages():
     season_appearances = []
     season_links = parseSeriesPage()
@@ -51,10 +59,10 @@ def parseWikiPages():
         print(season_link.text)
         for cur_season_appearance_link in cur_season_appearance_links:
             cur_season_appearance_link.season = season_link.text
-            season_appearances.append(cur_season_appearance_link)
+            season_appearances.append(cur_season_appearance_link.__dict__)
             print(json.dumps(cur_season_appearance_link.__dict__))
+    return season_appearances
 
-            
 
 def parseSeasonTableBodies(table_bodies):
     youtube_link_pattern = re.compile(r'https://youtube.com/|https://www.youtube.com/|http://www.youtube.com/')
@@ -75,6 +83,7 @@ def parseSeasonTableBodies(table_bodies):
 
     return season_appearances
 
+
 def getHermitTableBodies(soup, season_link):
     table_bodies = []
     hermits_header_span = soup.find(id=HERMITS_HEADER_SPAN_ID)
@@ -88,8 +97,9 @@ def getHermitTableBodies(soup, season_link):
 
     return table_bodies
 
+
 def parseSeasonPage(season_page_internal_link):
-    filepath = './data/hermitcraft/wiki-pages' + season_page_internal_link + '.json'
+    filepath = './data/hermitcraft/wiki-pages/' + season_page_internal_link + '.json'
     soup = getSoup(filepath=filepath, uri=f"https://hermitcraft.fandom.com/api.php?action=parse&page={season_page_internal_link}&format=json")
 
     table_bodies = getHermitTableBodies(soup=soup, season_link=season_page_internal_link)
@@ -108,6 +118,7 @@ def parseSeriesTable(soup, series_table_id):
             list_of_links.append(season_link)
 
     return list_of_links
+
 
 def parseSeriesPage():
     """
@@ -137,4 +148,5 @@ def parseSeriesPage():
 
     return season_links
 
-parseWikiPages()
+
+writeSeasonAppearancesToFile()
