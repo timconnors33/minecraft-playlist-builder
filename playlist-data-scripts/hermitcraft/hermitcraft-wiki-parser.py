@@ -23,12 +23,6 @@ class SeasonAppearanceLink():
         self.season = None
 
 
-class SeasonAppearanceJson():
-    def __init__(self, channel, season):
-        self.channel = channel
-        self.season = season
-
-
 def writeSeasonAppearancesToFile():
     season_appearances = parseWikiPages()
     filepath = './data/hermitcraft/season-appearances.json'
