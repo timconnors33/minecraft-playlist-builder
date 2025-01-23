@@ -18,12 +18,13 @@ class Season():
         self.series_title = series_title
 
 class Video():
-     def __init__(self, channel_id, title, season_title, series_title, thumbnail_uri):
+     def __init__(self, channel_id, title, season_title, series_title, thumbnail_uri, published_at):
         self.channel_id = channel_id
         self.title = title,
         self.season_title = season_title
         self.series_title = series_title
         self.thumbnail_uri = thumbnail_uri
+        self.published_ata = published_at
 
 class SeasonAppearance():
     def __init__(self, channel_id, season_title, video_count):
@@ -65,6 +66,26 @@ def processPlaylistVideos(playlist_id):
         playlistId=playlist_id
     )
     response = request.execute()
-    print(response)
+
+    while 'nextPageToken' in response:
+        request = youtube.playlistItems().list(
+            part='snippet',
+            maxResults=50,
+            playlistId=playlist_id,
+            pageToken = response.get('nextPageToken')
+        )
+        response = request.execute()
+        for playlist_item in response.get('items'):
+            '''
+            playListItem does have a publishedAt property, but I believe this specifies the time the item was added to the playlist,
+            not when it was first uploaded to YouTube. 
+            
+            TODO: See if there is a way to get the video upload time without making another
+            call to the YouTube API.
+            '''
+            video_published_at = getVideoPublishTime(video_id=playlist_item.get('snippet').get('resourceId').get('videoId'))
+        
+def getVideoPublishTime(video_id):
+    print(video_id)
 
 processWikiData()
