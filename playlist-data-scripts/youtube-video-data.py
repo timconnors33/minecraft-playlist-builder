@@ -7,8 +7,12 @@ import googleapiclient.discovery
 load_dotenv(find_dotenv())
 
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-REQUEST_PART = 'snippet,contentDetails'
-MAX_RESULTS = 50
+PLAYLIST_ITEMS_REQUEST_PART = 'snippet,contentDetails'
+PLAYLIST_ITEMS_MAX_RESULTS = 50
+
+youtube = googleapiclient.discovery.build(
+        serviceName='youtube', version='v3', developerKey=YOUTUBE_API_KEY
+)
 
 class Series():
     def __init__(self, title):
@@ -29,13 +33,13 @@ class Video():
         self.published_at = published_at
 
 class SeasonAppearance():
-    def __init__(self, channel_id, season_title, video_count):
+    def __init__(self, channel_id, season_title, series_title):
         self.channel_id = channel_id
-        self.season = season_title
-        self.video_count = video_count
+        self.season_title = season_title
+        self.series_title = series_title
 
 class Channel():
-    def __init__(self, id, name, thumbnail_uri=None):
+    def __init__(self, id, name, thumbnail_uri):
         self.id = id
         self.name = name
         self.thumbnail_uri = thumbnail_uri
@@ -51,41 +55,55 @@ def getWikiData():
     return season_appearances
 
 def processWikiData():
-    season_appearances = getWikiData()
-    for season_appearance in season_appearances:
-        youtube_link = season_appearance['youtube_internal_link']
+    wiki_season_appearances = getWikiData()
+    for wiki_season_appearances in wiki_season_appearances:
+        youtube_link = wiki_season_appearances['youtube_internal_link']
         if youtube_link == 'playlist?list=PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y':
             youtube_link = youtube_link.replace('playlist?list=', '')
-            season = Season(title=season_appearance['season'], series_title='Hermitcraft')
-            processPlaylistVideos(playlist_id=youtube_link, season=season)
+            season = Season(title=wiki_season_appearances['season'], series_title='Hermitcraft')
+            videos, channels, season_appearances = processPlaylistVideos(playlist_id=youtube_link, season=season)
+            #for video in videos:
+             #   print(video.__dict__)
+            for channel_id in channels:
+                print(channels[channel_id].__dict__)
+            for season_appearance in season_appearances:
+                print(season_appearance.__dict__)
 
 def processPlaylistVideos(playlist_id, season):
     videos = []
-    youtube = googleapiclient.discovery.build(
-        serviceName='youtube', version='v3', developerKey=YOUTUBE_API_KEY
-    )
+    channels = {}
+    season_appearances = []
     request = youtube.playlistItems().list(
-        part=REQUEST_PART,
-        maxResults=MAX_RESULTS,
+        part=PLAYLIST_ITEMS_REQUEST_PART,
+        maxResults=PLAYLIST_ITEMS_MAX_RESULTS,
         playlistId=playlist_id
     )
     response = request.execute()
-    videos.extend(processPlaylistPageVideos(response=response, season=season))
+    videos.extend(processPlaylistPage(response=response, season=season))
 
     while 'nextPageToken' in response:
         request = youtube.playlistItems().list(
-            part=REQUEST_PART,
-            maxResults=MAX_RESULTS,
+            part=PLAYLIST_ITEMS_REQUEST_PART,
+            maxResults=PLAYLIST_ITEMS_MAX_RESULTS,
             playlistId=playlist_id,
             pageToken = response.get('nextPageToken')
         )
         response = request.execute()
-        videos.extend(processPlaylistPageVideos(response=response, season=season))
-    
-    for video in videos:
-        print(json.dumps(video.__dict__))
+        videos.extend(processPlaylistPage(response=response, season=season))
 
-def processPlaylistPageVideos(response, season):
+    # TODO: Should probably do this in the same pass as the videos as some point
+    for video in videos:
+        if video.channel_id not in channels:
+            channel = getChannel(channel_id=video.channel_id)
+            channels[video.channel_id] = channel
+            season_appearances.append(SeasonAppearance
+                                      (channel_id=video.channel_id, 
+                                       season_title=season.title,
+                                       series_title=season.series_title))
+    return videos, channels, season_appearances
+
+
+def processPlaylistPage(response, season):
     videos = []
     series_title = season.series_title
     season_title = season.title
@@ -107,5 +125,19 @@ def processPlaylistPageVideos(response, season):
                 published_at=video_published_at)
             videos.append(video)
     return videos
+
+def getChannel(channel_id):
+    request = youtube.channels().list(
+        part='snippet',
+        maxResults=1,
+        id=channel_id
+    )
+    response = request.execute()
+    snippet = response.get('items')[0].get('snippet')
+
+    thumbnail_uri = snippet.get('thumbnails').get('high').get('url')
+    name = snippet.get('title')
+    channel = Channel(id=channel_id, name=name, thumbnail_uri=thumbnail_uri)
+    return channel
 
 processWikiData()
