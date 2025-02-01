@@ -113,11 +113,13 @@ def processPlaylistPage(response, season):
         Ensures only videos are processed and privated videos are filtered out
         '''
         if 'videoId' in playlist_item.get('contentDetails') and 'videoOwnerChannelId' in playlist_item.get('snippet'):
+            video_id = playlist_item.get('contentDetails').get('videoId')
             video_published_at = playlist_item.get('contentDetails').get('videoPublishedAt')
             channel_id = playlist_item.get('snippet').get('videoOwnerChannelId')
             video_title = playlist_item.get('snippet').get('title')
             video_thumbnail_uri = playlist_item.get('snippet').get('thumbnails').get('high').get('url')
             video = Video(
+                video_id=video_id,
                 channel_id=channel_id, 
                 title=video_title, 
                 season_title=season_title,

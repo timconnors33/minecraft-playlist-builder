@@ -20,15 +20,14 @@ class SeasonAppearanceLink():
     def __init__(self, youtube_internal_link, link_type):
         self.youtube_internal_link = youtube_internal_link
         self.link_type = link_type
-        self.season = None
 
 
 def writeSeasonAppearancesToFile():
-    season_appearances = parseWikiPages()
+    series_data = parseWikiPages()
     filepath = './data/hermitcraft/season-appearances.json'
     if not os.path.exists(filepath):
         with open(filepath, 'w') as f:
-            json.dump(season_appearances, f)
+            json.dump(series_data, f)
 
 
 def getSoup(filepath, uri):
@@ -46,16 +45,20 @@ def getSoup(filepath, uri):
 
 
 def parseWikiPages():
+    series = {}
+    seasons = {}
     season_appearances = []
     season_links = parseSeriesPage()
     for season_link in season_links:
+        cur_season_appearances = []
         cur_season_appearance_links = parseSeasonPage(season_page_internal_link=season_link.internal_link)
-        print(season_link.text)
         for cur_season_appearance_link in cur_season_appearance_links:
-            cur_season_appearance_link.season = season_link.text
-            season_appearances.append(cur_season_appearance_link.__dict__)
-            print(json.dumps(cur_season_appearance_link.__dict__))
-    return season_appearances
+            cur_season_appearances.append(cur_season_appearance_link.__dict__)
+        seasons[season_link.text] = cur_season_appearances
+    series['title'] = 'Hermitcraft'
+    series['seasons'] = seasons
+    print(json.dumps(series, indent=4))
+    return series
 
 
 def parseSeasonTableBodies(table_bodies):
