@@ -24,7 +24,8 @@ class Season():
         self.series_title = series_title
 
 class Video():
-     def __init__(self, channel_id, title, season_title, series_title, thumbnail_uri, published_at):
+     def __init__(self, video_id, channel_id, title, season_title, series_title, thumbnail_uri, published_at):
+        self.video_id = video_id
         self.channel_id = channel_id
         self.title = title
         self.season_title = season_title
