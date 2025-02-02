@@ -20,9 +20,10 @@ class Series():
         self.title = title
 
 class Season():
-    def __init__(self, title, series_title):
+    def __init__(self, title, series_title, is_current_season):
         self.title = title
         self.series_title = series_title
+        self.is_current_season = is_current_season
 
 class Video():
      def __init__(self, video_id, channel_id, title, season_title, series_title, thumbnail_uri, published_at):
@@ -61,7 +62,7 @@ def processWikiData():
         series_title = series['title']
         addSeriesToDb(series_title=series_title)
         for season in series['seasons']:
-            cur_season = Season(title=season['title'], series_title=series_title)
+            cur_season = Season(title=season['title'], series_title=series_title, is_current_season=season['is_current_season'])
             for wiki_season_appearance in season['season_appearances']:
                     youtube_link = wiki_season_appearance['youtube_internal_link']
                     '''

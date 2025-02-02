@@ -11,9 +11,10 @@ HERMITS_HEADER_SPAN_ID = "Hermits"
 
 
 class SeasonLink():
-    def __init__(self, internal_link, text):
+    def __init__(self, internal_link, text, is_current_season):
         self.internal_link = internal_link
         self.text = text
+        self.is_current_season = is_current_season
 
 
 class SeasonAppearanceLink():
@@ -60,6 +61,7 @@ def parseWikiPages():
         for cur_season_appearance_link in cur_season_appearance_links:
             cur_season_appearances.append(cur_season_appearance_link.__dict__)
         cur_season['title'] = season_link.text
+        cur_season['is_current_season'] = season_link.is_current_season
         cur_season['season_appearances'] = cur_season_appearances
         seasons.append(cur_season)
     series['title'] = 'Hermitcraft'
@@ -118,7 +120,10 @@ def parseSeriesTable(soup, series_table_id):
     anchors = table_body.find_all('a')
     for anchor in anchors:
         if anchor.has_attr('href') and anchor['href'].startswith('/wiki/'):
-            season_link = SeasonLink(internal_link=anchor['href'].replace('/wiki/', ''), text=anchor.get_text())
+            is_current_season = False
+            if series_table_id == CUR_VANILLA_SEASONS_SPAN_ID:
+                is_current_season = True
+            season_link = SeasonLink(internal_link=anchor['href'].replace('/wiki/', ''), text=anchor.get_text(), is_current_season=is_current_season)
             list_of_links.append(season_link)
 
     return list_of_links
@@ -147,6 +152,8 @@ def parseSeriesPage():
         for season_link in season_links:
             if season_link.internal_link == cur_season_link.internal_link and season_link.text == cur_season_link.text:
                 isDuplicate = True
+                if cur_season_link.is_current_season:
+                    season_link.is_current_season = True
         if not isDuplicate:
             season_links.append(cur_season_link)
 
