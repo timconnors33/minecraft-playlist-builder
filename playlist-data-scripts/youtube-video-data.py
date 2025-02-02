@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 import json
 import googleapiclient.discovery
+import pyodbc
 
 
 load_dotenv(find_dotenv())
@@ -46,29 +47,42 @@ class Channel():
         self.thumbnail_uri = thumbnail_uri
 
 def getWikiData():
-    season_appearances = []
     filepath = './data/hermitcraft/season-appearances.json'
 
     if os.path.exists(filepath):
             with open(filepath, 'r') as f:
-                season_appearances = json.load(f)
+                series = json.load(f)
 
-    return season_appearances
+    return series
 
 def processWikiData():
-    wiki_season_appearances = getWikiData()
-    for wiki_season_appearances in wiki_season_appearances:
-        youtube_link = wiki_season_appearances['youtube_internal_link']
-        if youtube_link == 'playlist?list=PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y':
-            youtube_link = youtube_link.replace('playlist?list=', '')
-            season = Season(title=wiki_season_appearances['season'], series_title='Hermitcraft')
-            videos, channels, season_appearances = processPlaylistVideos(playlist_id=youtube_link, season=season)
-            #for video in videos:
-             #   print(video.__dict__)
-            for channel_id in channels:
-                print(channels[channel_id].__dict__)
-            for season_appearance in season_appearances:
-                print(season_appearance.__dict__)
+    series_list = getWikiData()
+    for series in series_list:
+        series_title = series['title']
+        addSeriesToDb(series_title=series_title)
+        for season in series['seasons']:
+            cur_season = Season(title=season['title'], series_title=series_title)
+            for wiki_season_appearance in season['season_appearances']:
+                    youtube_link = wiki_season_appearance['youtube_internal_link']
+                    '''
+                    if youtube_link == 'playlist?list=PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y':
+                        youtube_link = youtube_link.replace('playlist?list=', '')
+                        videos, channels, season_appearances = processPlaylistVideos(playlist_id=youtube_link, season=cur_season)
+                        #for video in videos:
+                        #   print(video.__dict__)
+                        for channel_id in channels:
+                            print(channels[channel_id].__dict__)
+                        for season_appearance in season_appearances:
+                            print(season_appearance.__dict__)
+                    '''
+
+def addSeriesToDb(series_title):
+    conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
+    cursor = conn.cursor()
+    cursor.execute('SELECT SeriesTitle FROM Series')
+    rows = cursor.fetchall()
+    for row in rows:
+        print(row)
 
 def processPlaylistVideos(playlist_id, season):
     videos = []

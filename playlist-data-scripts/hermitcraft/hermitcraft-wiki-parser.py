@@ -23,11 +23,15 @@ class SeasonAppearanceLink():
 
 
 def writeSeasonAppearancesToFile():
+    # TODO: This should be extracted to a more general-purpose, reusable function at
+    # some point
+    all_series_list = []
     series_data = parseWikiPages()
+    all_series_list.append(series_data)
     filepath = './data/hermitcraft/season-appearances.json'
     if not os.path.exists(filepath):
         with open(filepath, 'w') as f:
-            json.dump(series_data, f)
+            json.dump(all_series_list, f)
 
 
 def getSoup(filepath, uri):
@@ -46,15 +50,18 @@ def getSoup(filepath, uri):
 
 def parseWikiPages():
     series = {}
-    seasons = {}
+    seasons = []
     season_appearances = []
     season_links = parseSeriesPage()
     for season_link in season_links:
+        cur_season = {}
         cur_season_appearances = []
         cur_season_appearance_links = parseSeasonPage(season_page_internal_link=season_link.internal_link)
         for cur_season_appearance_link in cur_season_appearance_links:
             cur_season_appearances.append(cur_season_appearance_link.__dict__)
-        seasons[season_link.text] = cur_season_appearances
+        cur_season['title'] = season_link.text
+        cur_season['season_appearances'] = cur_season_appearances
+        seasons.append(cur_season)
     series['title'] = 'Hermitcraft'
     series['seasons'] = seasons
     print(json.dumps(series, indent=4))
