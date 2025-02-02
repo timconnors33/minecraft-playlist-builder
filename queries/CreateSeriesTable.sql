@@ -1,5 +1,5 @@
 CREATE TABLE [Series]
 (
     SeriesId INTEGER IDENTITY PRIMARY KEY,
-    SeriesTitle NVARCHAR(64) NOT NULL
+    SeriesTitle NVARCHAR(64) UNIQUE NOT NULL
 );
