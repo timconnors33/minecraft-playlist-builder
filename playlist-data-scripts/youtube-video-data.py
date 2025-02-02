@@ -79,10 +79,23 @@ def processWikiData():
 def addSeriesToDb(series_title):
     conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
     cursor = conn.cursor()
-    cursor.execute('SELECT SeriesTitle FROM Series')
-    rows = cursor.fetchall()
-    for row in rows:
-        print(row)
+
+    # https://stackoverflow.com/questions/20971680/sql-server-insert-if-not-exists
+    sql = '''
+        INSERT INTO [dbo].[Series] (SeriesTitle)
+        SELECT ?
+        WHERE NOT EXISTS 
+            (SELECT 1 
+            FROM [dbo].[Series] 
+            WHERE SeriesTitle = ?)
+    '''
+    
+    params = (series_title, series_title)
+    cursor.execute(sql, params)
+    conn.commit()
+
+    cursor.close()
+    conn.close()
 
 def processPlaylistVideos(playlist_id, season):
     videos = []
