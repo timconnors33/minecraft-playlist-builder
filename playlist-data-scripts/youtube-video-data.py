@@ -8,7 +8,7 @@ import pyodbc
 load_dotenv(find_dotenv())
 
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-PLAYLIST_ITEMS_REQUEST_PART = 'snippet,contentDetails'
+PLAYLIST_ITEMS_REQUEST_PART = 'snippet,contentDetails,status'
 PLAYLIST_ITEMS_MAX_RESULTS = 50
 
 youtube = googleapiclient.discovery.build(
@@ -60,9 +60,10 @@ def processWikiData():
     series_list = getWikiData()
     for series in series_list:
         series_title = series['title']
-        addSeriesToDb(series_title=series_title)
+        series_id = addSeriesToDb(series_title=series_title)
         for season in series['seasons']:
             cur_season = Season(title=season['title'], series_title=series_title, is_current_season=season['is_current_season'])
+            addSeasonToDb(season=cur_season, series_id=series_id)
             for wiki_season_appearance in season['season_appearances']:
                     youtube_link = wiki_season_appearance['youtube_internal_link']
                     '''
@@ -77,12 +78,19 @@ def processWikiData():
                             print(season_appearance.__dict__)
                     '''
 
-def addSeriesToDb(series_title):
+def queryDbInsert(sql_query, params):
     conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
     cursor = conn.cursor()
 
+    cursor.execute(sql_query, params)
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+def addSeriesToDb(series_title):
     # https://stackoverflow.com/questions/20971680/sql-server-insert-if-not-exists
-    sql = '''
+    sql_query = '''
         INSERT INTO [dbo].[Series] (SeriesTitle)
         SELECT ?
         WHERE NOT EXISTS 
@@ -90,13 +98,38 @@ def addSeriesToDb(series_title):
             FROM [dbo].[Series] 
             WHERE SeriesTitle = ?)
     '''
-    
-    params = (series_title, series_title)
-    cursor.execute(sql, params)
+    queryDbInsert(sql_query=sql_query, params=(series_title, series_title))
+
+    conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
+    cursor = conn.cursor()
+
+    sql_query = '''
+        SELECT SeriesId FROM [dbo].[Series]
+        WHERE SeriesTitle = ?
+    '''
+    params = series_title
+
+    series_id = cursor.execute(sql_query, params).fetchone().SeriesId
     conn.commit()
 
     cursor.close()
     conn.close()
+
+    return series_id
+
+def addSeasonToDb(season, series_id):
+    sql_query = '''
+        INSERT INTO [dbo].[Seasons] (SeriesId, SeasonTitle, IsCurrentSeason)
+        SELECT ?, ?, ?
+        WHERE NOT EXISTS 
+            (SELECT 1 
+            FROM [dbo].[Seasons] 
+            WHERE SeriesId = ?
+            AND SeasonTitle = ?)
+    '''
+    params = (series_id, season.title, season.is_current_season, series_id, season.title)
+    queryDbInsert(sql_query=sql_query, params=params)
+    
 
 def processPlaylistVideos(playlist_id, season):
     videos = []
@@ -138,9 +171,9 @@ def processPlaylistPage(response, season):
     season_title = season.title
     for playlist_item in response.get('items'):
         '''
-        Ensures only videos are processed and privated videos are filtered out
+        Ensures only public videos are processed
         '''
-        if 'videoId' in playlist_item.get('contentDetails') and 'videoOwnerChannelId' in playlist_item.get('snippet'):
+        if 'videoId' in playlist_item.get('contentDetails') and playlist_item.get('status').get('privacyStatus') == 'public':
             video_id = playlist_item.get('contentDetails').get('videoId')
             video_published_at = playlist_item.get('contentDetails').get('videoPublishedAt')
             channel_id = playlist_item.get('snippet').get('videoOwnerChannelId')

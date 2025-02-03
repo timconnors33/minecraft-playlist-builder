@@ -1,6 +1,6 @@
 CREATE TABLE [Seasons]
 (
-    SeasonId INTEGER PRIMARY KEY,
+    SeasonId INTEGER IDENTITY PRIMARY KEY,
     SeriesId INTEGER NOT NULL,
     SeasonTitle NVARCHAR(64) NOT NULL,
     IsCurrentSeason BIT NOT NULL,
