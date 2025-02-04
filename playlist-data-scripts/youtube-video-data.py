@@ -180,6 +180,33 @@ def addSeasonAppearanceToDb(season_appearance):
 
     return season_appearance_internal_id
 
+def addVideoToDb(video):
+    sql_query = '''
+        INSERT INTO [dbo].[Videos] (VideoYouTubeId, VideoTitle, VideoThumbnailUri, VideoPublishedAt, SeasonAppearanceId)
+        SELECT ?, ?, ?, ?, ?
+        WHERE NOT EXISTS 
+            (SELECT 1 
+            FROM [dbo].[Videos] 
+            WHERE VideoYouTubeId = ?)
+    '''
+    params = (video.youtube_id,
+              video.title,
+              video.thumbnail_uri,
+              video.published_at.replace('T', ' ').replace('Z', ''),
+              video.season_appearance_internal_id,
+              video.youtube_id)
+    queryDbInsert(sql_query=sql_query, params=params)
+
+    sql_query = '''
+        SELECT VideoId FROM [dbo].[Videos]
+        WHERE VideoYouTubeId = ?
+    '''
+    params = (video.youtube_id)
+
+    video_internal_id = queryDbGetRow(sql_query=sql_query, params=params).VideoId
+
+    return video_internal_id
+
     
 
 def processPlaylistVideos(playlist_id, season_internal_id):
@@ -220,15 +247,15 @@ def processPlaylistPage(response, season_internal_id):
             video_published_at = playlist_item.get('contentDetails').get('videoPublishedAt')
             video_title = playlist_item.get('snippet').get('title')
             video_thumbnail_uri = playlist_item.get('snippet').get('thumbnails').get('high').get('url')
-            '''
+            
             video = Video(
                 youtube_id=video_id,
                 title=video_title, 
                 season_appearance_internal_id=season_appearanace_internal_id,
                 thumbnail_uri=video_thumbnail_uri,
                 published_at=video_published_at)
-            '''
-            #addVideoToDb(video)
+            
+            addVideoToDb(video)
 
 def parseChannel(channel_id):
     request = youtube.channels().list(
