@@ -34,8 +34,8 @@ class Video():
         self.season_appearance_internal_id = season_appearance_internal_id
 
 class SeasonAppearance():
-    def __init__(self, channel_interal_id, season_internal_id):
-        self.channel_interal_id = channel_interal_id
+    def __init__(self, channel_internal_id, season_internal_id):
+        self.channel_internal_id = channel_internal_id
         self.season_internal_id = season_internal_id
 
 class Channel():
@@ -65,7 +65,7 @@ def processWikiData():
                     youtube_link = wiki_season_appearance['youtube_internal_link']
                     if youtube_link == 'playlist?list=PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y':
                         youtube_link = youtube_link.replace('playlist?list=', '')
-                        processPlaylistVideos(playlist_id=youtube_link, season=cur_season, season_internal_id=cur_season_internal_id)
+                        processPlaylistVideos(playlist_id=youtube_link, season_internal_id=cur_season_internal_id)
 
 def queryDbInsert(sql_query, params):
     conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
@@ -156,16 +156,40 @@ def addChannelToDb(channel):
 
     return channel_internal_id
 
+def addSeasonAppearanceToDb(season_appearance):
+    sql_query = '''
+        INSERT INTO [dbo].[SeasonAppearances] (SeasonId, ChannelId)
+        SELECT ?, ?
+        WHERE NOT EXISTS 
+            (SELECT 1 
+            FROM [dbo].[SeasonAppearances] 
+            WHERE SeasonId = ?
+            AND ChannelId = ?)
+    '''
+    params = (season_appearance.season_internal_id, season_appearance.channel_internal_id, 
+              season_appearance.season_internal_id, season_appearance.channel_internal_id)
+    queryDbInsert(sql_query=sql_query, params=params)
+
+    sql_query = '''
+        SELECT SeasonAppearanceId FROM [dbo].[SeasonAppearances]
+        WHERE SeasonId = ? AND ChannelId = ?
+    '''
+    params = (season_appearance.season_internal_id, season_appearance.channel_internal_id)
+
+    season_appearance_internal_id = queryDbGetRow(sql_query=sql_query, params=params).SeasonAppearanceId
+
+    return season_appearance_internal_id
+
     
 
-def processPlaylistVideos(playlist_id, season, season_internal_id):
+def processPlaylistVideos(playlist_id, season_internal_id):
     request = youtube.playlistItems().list(
         part=PLAYLIST_ITEMS_REQUEST_PART,
         maxResults=PLAYLIST_ITEMS_MAX_RESULTS,
         playlistId=playlist_id
     )
     response = request.execute()
-    processPlaylistPage(response=response, season=season, season_internal_id=season_internal_id)
+    processPlaylistPage(response=response, season_internal_id=season_internal_id)
 
     while 'nextPageToken' in response:
         request = youtube.playlistItems().list(
@@ -175,10 +199,10 @@ def processPlaylistVideos(playlist_id, season, season_internal_id):
             pageToken = response.get('nextPageToken')
         )
         response = request.execute()
-        processPlaylistPage(response=response, season=season, season_internal_id=season_internal_id)
+        processPlaylistPage(response=response, season_internal_id=season_internal_id)
 
 
-def processPlaylistPage(response, season, season_internal_id):
+def processPlaylistPage(response, season_internal_id):
     for playlist_item in response.get('items'):
         '''
         Ensures only public videos are processed
@@ -188,9 +212,9 @@ def processPlaylistPage(response, season, season_internal_id):
             channel_internal_id = addChannelToDb(channel)
 
             season_appearance = SeasonAppearance(
-                channel_interal_id=channel_internal_id,
+                channel_internal_id=channel_internal_id,
                 season_internal_id=season_internal_id)
-            #season_appearanace_internal_id = addSeasonAppearanceToDb(season_appearance)
+            season_appearanace_internal_id = addSeasonAppearanceToDb(season_appearance)
             
             video_id = playlist_item.get('contentDetails').get('videoId')
             video_published_at = playlist_item.get('contentDetails').get('videoPublishedAt')
