@@ -59,14 +59,21 @@ def parseWikiPages():
         cur_season_appearances = []
         cur_season_appearance_links = parseSeasonPage(season_page_internal_link=season_link.internal_link)
         for cur_season_appearance_link in cur_season_appearance_links:
-            cur_season_appearances.append(cur_season_appearance_link.__dict__)
+            # TODO: This looks quite silly, but I want to filter out seasons 1-5 for now because not all
+            # hermits from that era have playlists. However, (I think) all hermits from season 6 onward
+            # who have channel links on the wiki pages do have valid playlists; sometimes they are
+            # community-made.
+            # https://stackoverflow.com/questions/5320525/regular-expression-to-match-last-number-in-a-string
+            season_number = int(re.compile(r'.*(?:\D|^)(\d+)').findall(season_link.text)[0])
+            if cur_season_appearance_link.link_type == 'playlist' or season_number >= 6:
+                cur_season_appearances.append(cur_season_appearance_link.__dict__)
         cur_season['title'] = season_link.text
         cur_season['is_current_season'] = season_link.is_current_season
         cur_season['season_appearances'] = cur_season_appearances
         seasons.append(cur_season)
     series['title'] = 'Hermitcraft'
     series['seasons'] = seasons
-    print(json.dumps(series, indent=4))
+    #print(json.dumps(series, indent=4))
     return series
 
 
