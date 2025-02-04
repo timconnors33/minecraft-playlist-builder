@@ -65,7 +65,40 @@ def processWikiData():
                     youtube_link = wiki_season_appearance['youtube_internal_link']
                     if youtube_link == 'playlist?list=PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y':
                         youtube_link = youtube_link.replace('playlist?list=', '')
-                        processPlaylistVideos(playlist_id=youtube_link, season_internal_id=cur_season_internal_id)
+                        #processPlaylistVideos(playlist_id=youtube_link, season_internal_id=cur_season_internal_id)
+                    elif youtube_link == '@GoodTimesWithScar':
+                        playlist_id = getSeasonAppearancePlaylist(series_title=series_title, season_title=cur_season.title, channel_link=youtube_link)
+
+def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
+    if channel_link.startswith('@'):
+        request = youtube.channels().list(
+            part='snippet',
+            forHandle=channel_link,
+            maxResults=1,
+        )
+        
+    else:
+        channel_link = channel_link.replace('user/', '')
+        request = youtube.channels().list(
+            part='snippet',
+            forUsername=channel_link,
+            maxResults=1,
+        )
+
+    response = request.execute()
+    channel_name = response.get('items')[0]['snippet']['title']
+    
+    queryString = channel_name + ' ' + series_title + ' ' + season_title
+    request = youtube.search().list(
+        part='snippet',
+        maxResults=1,
+        q=queryString,
+        type='playlist'
+    )
+    response = request.execute()
+
+    playlist_id = response.get('items')[0]['id']['playlistId']
+    return playlist_id
 
 def queryDbInsert(sql_query, params):
     conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
