@@ -3,6 +3,7 @@ from dotenv import load_dotenv, find_dotenv
 import json
 import googleapiclient.discovery
 import pyodbc
+import cProfile
 
 
 load_dotenv(find_dotenv())
@@ -44,6 +45,10 @@ class Channel():
         self.name = name
         self.thumbnail_uri = thumbnail_uri
 
+existing_channel_ids = {}
+existing_season_appearance_ids = {}
+existing_video_youtube_ids = set()
+
 def getWikiData():
     filepath = './data/hermitcraft/season-appearances.json'
 
@@ -53,21 +58,65 @@ def getWikiData():
 
     return series
 
-def processWikiData():
+def processWikiData(seasons_to_process, filter):
+    getExistingData()
     series_list = getWikiData()
     for series in series_list:
         series_title = series['title']
         series_internal_id = addSeriesToDb(series_title=series_title)
         for season in series['seasons']:
-            cur_season = Season(title=season['title'], series_internal_id=series_internal_id, is_current_season=season['is_current_season'])
-            cur_season_internal_id = addSeasonToDb(season=cur_season)
-            for wiki_season_appearance in season['season_appearances']:
-                    youtube_link = wiki_season_appearance['youtube_internal_link']
-                    if youtube_link == 'playlist?list=PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y':
-                        youtube_link = youtube_link.replace('playlist?list=', '')
-                        #processPlaylistVideos(playlist_id=youtube_link, season_internal_id=cur_season_internal_id)
-                    elif youtube_link == '@GoodTimesWithScar':
-                        playlist_id = getSeasonAppearancePlaylist(series_title=series_title, season_title=cur_season.title, channel_link=youtube_link)
+            if not filter or series_title + ' ' + season['title'] in seasons_to_process:
+                cur_season = Season(title=season['title'], series_internal_id=series_internal_id, is_current_season=season['is_current_season'])
+                print('Currently processing ' + cur_season.title)
+                cur_season_internal_id = addSeasonToDb(season=cur_season)
+                for wiki_season_appearance in season['season_appearances']:
+                        youtube_link = wiki_season_appearance['youtube_internal_link']
+                        if 'list=PL' in youtube_link:
+                            # TODO: This looks silly, but I want to make sure not to extract another
+                            # ID type. Will a 'list=' substring only ever be followed by a playlist ID?
+                            youtube_link = 'PL' + (youtube_link.split('list=PL', 1)[1]).split('&', 1)[0]
+                        else:
+                            youtube_link = getSeasonAppearancePlaylist(series_title=series_title, season_title=cur_season.title, channel_link=youtube_link)
+                        processPlaylistVideos(playlist_id=youtube_link, season_internal_id=cur_season_internal_id)
+
+def getExistingData():
+    getExistingChannels()
+    getExistingSeasonAppearances()
+    getExistingVideos()
+
+def getExistingChannels():
+    sql_query = 'SELECT ChannelId, ChannelYoutubeId FROM [dbo].[Channels]'
+    rows = queryDbGetAllRows(sql_query=sql_query)
+
+    for row in rows:
+        existing_channel_ids[row.ChannelYoutubeId] = row.ChannelId
+
+def getExistingSeasonAppearances():
+    sql_query = 'SELECT ChannelId, SeasonId, SeasonAppearanceId FROM [dbo].[SeasonAppearances]'
+    rows = queryDbGetAllRows(sql_query=sql_query)
+
+    for row in rows:
+        existing_season_appearance_ids[(row.ChannelId, row.SeasonId)] = row.SeasonAppearanceId
+
+def queryDbGetAllRows(sql_query):
+    conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
+    cursor = conn.cursor()
+
+    rows = cursor.execute(sql_query).fetchall()
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return rows
+
+def getExistingVideos():
+
+    sql_query = 'SELECT VideoYouTubeId FROM [dbo].[Videos]'
+    rows = queryDbGetAllRows(sql_query=sql_query)
+
+    for row in rows:
+        existing_video_youtube_ids.add(row.VideoYouTubeId)
 
 def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
     if channel_link.startswith('@'):
@@ -101,14 +150,20 @@ def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
     return playlist_id
 
 def queryDbInsert(sql_query, params):
-    conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
-    cursor = conn.cursor()
+    try:
+        conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
+        cursor = conn.cursor()
 
-    cursor.execute(sql_query, params)
-    conn.commit()
+        cursor.execute(sql_query, params)
+        conn.commit()
 
-    cursor.close()
-    conn.close()
+        cursor.close()
+        conn.close()
+
+    # If violating integrity constraint, (like trying to insert an existing unique value),
+    # pass and keep inserting other rows.
+    except pyodbc.IntegrityError:
+        pass
 
 def queryDbGetRow(sql_query, params):
     conn = pyodbc.connect(os.environ.get('ODBC_DB_CONNECTION_STRING'))
@@ -126,13 +181,9 @@ def addSeriesToDb(series_title):
     # https://stackoverflow.com/questions/20971680/sql-server-insert-if-not-exists
     sql_query = '''
         INSERT INTO [dbo].[Series] (SeriesTitle)
-        SELECT ?
-        WHERE NOT EXISTS 
-            (SELECT 1 
-            FROM [dbo].[Series] 
-            WHERE SeriesTitle = ?)
+        VALUES (?)
     '''
-    queryDbInsert(sql_query=sql_query, params=(series_title, series_title))
+    queryDbInsert(sql_query=sql_query, params=(series_title))
 
     sql_query = '''
         SELECT SeriesId FROM [dbo].[Series]
@@ -147,14 +198,9 @@ def addSeriesToDb(series_title):
 def addSeasonToDb(season):
     sql_query = '''
         INSERT INTO [dbo].[Seasons] (SeriesId, SeasonTitle, IsCurrentSeason)
-        SELECT ?, ?, ?
-        WHERE NOT EXISTS 
-            (SELECT 1 
-            FROM [dbo].[Seasons] 
-            WHERE SeriesId = ?
-            AND SeasonTitle = ?)
+        VALUES (?, ?, ?)
     '''
-    params = (season.series_internal_id, season.title, season.is_current_season, season.series_internal_id, season.title)
+    params = (season.series_internal_id, season.title, season.is_current_season)
     queryDbInsert(sql_query=sql_query, params=params)
 
     sql_query = '''
@@ -170,13 +216,9 @@ def addSeasonToDb(season):
 def addChannelToDb(channel):
     sql_query = '''
         INSERT INTO [dbo].[Channels] (ChannelYouTubeId, ChannelName, ChannelThumbnailUri)
-        SELECT ?, ?, ?
-        WHERE NOT EXISTS 
-            (SELECT 1 
-            FROM [dbo].[Channels] 
-            WHERE ChannelYouTubeId = ?)
+        VALUES (?, ?, ?)
     '''
-    params = (channel.youtube_id, channel.name, channel.thumbnail_uri, channel.youtube_id)
+    params = (channel.youtube_id, channel.name, channel.thumbnail_uri)
     queryDbInsert(sql_query=sql_query, params=params)
 
     sql_query = '''
@@ -192,15 +234,9 @@ def addChannelToDb(channel):
 def addSeasonAppearanceToDb(season_appearance):
     sql_query = '''
         INSERT INTO [dbo].[SeasonAppearances] (SeasonId, ChannelId)
-        SELECT ?, ?
-        WHERE NOT EXISTS 
-            (SELECT 1 
-            FROM [dbo].[SeasonAppearances] 
-            WHERE SeasonId = ?
-            AND ChannelId = ?)
+        VALUES (?, ?)
     '''
-    params = (season_appearance.season_internal_id, season_appearance.channel_internal_id, 
-              season_appearance.season_internal_id, season_appearance.channel_internal_id)
+    params = (season_appearance.season_internal_id, season_appearance.channel_internal_id)
     queryDbInsert(sql_query=sql_query, params=params)
 
     sql_query = '''
@@ -213,21 +249,16 @@ def addSeasonAppearanceToDb(season_appearance):
 
     return season_appearance_internal_id
 
-def addVideoToDb(video):
+async def addVideoToDb(video):
     sql_query = '''
         INSERT INTO [dbo].[Videos] (VideoYouTubeId, VideoTitle, VideoThumbnailUri, VideoPublishedAt, SeasonAppearanceId)
-        SELECT ?, ?, ?, ?, ?
-        WHERE NOT EXISTS 
-            (SELECT 1 
-            FROM [dbo].[Videos] 
-            WHERE VideoYouTubeId = ?)
+        VALUES (?, ?, ?, ?, ?)
     '''
     params = (video.youtube_id,
               video.title,
               video.thumbnail_uri,
               video.published_at.replace('T', ' ').replace('Z', ''),
-              video.season_appearance_internal_id,
-              video.youtube_id)
+              video.season_appearance_internal_id)
     queryDbInsert(sql_query=sql_query, params=params)
 
     sql_query = '''
@@ -243,24 +274,29 @@ def addVideoToDb(video):
     
 
 def processPlaylistVideos(playlist_id, season_internal_id):
-    request = youtube.playlistItems().list(
-        part=PLAYLIST_ITEMS_REQUEST_PART,
-        maxResults=PLAYLIST_ITEMS_MAX_RESULTS,
-        playlistId=playlist_id
-    )
-    response = request.execute()
-    processPlaylistPage(response=response, season_internal_id=season_internal_id)
-
-    while 'nextPageToken' in response:
+    try:
         request = youtube.playlistItems().list(
             part=PLAYLIST_ITEMS_REQUEST_PART,
             maxResults=PLAYLIST_ITEMS_MAX_RESULTS,
-            playlistId=playlist_id,
-            pageToken = response.get('nextPageToken')
+            playlistId=playlist_id
         )
         response = request.execute()
         processPlaylistPage(response=response, season_internal_id=season_internal_id)
 
+        while 'nextPageToken' in response:
+            request = youtube.playlistItems().list(
+                part=PLAYLIST_ITEMS_REQUEST_PART,
+                maxResults=PLAYLIST_ITEMS_MAX_RESULTS,
+                playlistId=playlist_id,
+                pageToken = response.get('nextPageToken')
+            )
+            response = request.execute()
+            processPlaylistPage(response=response, season_internal_id=season_internal_id)
+    # If there is an HTTP error (like if the specified playlist is not found),
+    # log and keep processing.
+    except googleapiclient.errors.HttpError as err:
+        print(err)
+        pass
 
 def processPlaylistPage(response, season_internal_id):
     for playlist_item in response.get('items'):
@@ -268,13 +304,22 @@ def processPlaylistPage(response, season_internal_id):
         Ensures only public videos are processed
         '''
         if 'videoId' in playlist_item.get('contentDetails') and playlist_item.get('status').get('privacyStatus') == 'public':
-            channel = parseChannel(channel_id=playlist_item.get('snippet').get('videoOwnerChannelId'))
-            channel_internal_id = addChannelToDb(channel)
+            channel_youtube_id = playlist_item.get('snippet').get('videoOwnerChannelId')
+            if channel_youtube_id in existing_channel_ids:
+                channel_internal_id = existing_channel_ids[channel_youtube_id]
+            else:
+                channel = parseChannel(channel_id=channel_youtube_id)
+                channel_internal_id = addChannelToDb(channel)
+                existing_channel_ids[channel_youtube_id] = channel_internal_id
 
             season_appearance = SeasonAppearance(
                 channel_internal_id=channel_internal_id,
                 season_internal_id=season_internal_id)
-            season_appearanace_internal_id = addSeasonAppearanceToDb(season_appearance)
+            if (channel_internal_id, season_internal_id) not in existing_season_appearance_ids:
+                season_appearanace_internal_id = addSeasonAppearanceToDb(season_appearance)
+                existing_season_appearance_ids[(channel_internal_id, season_internal_id)] = season_appearanace_internal_id
+            else:
+                season_appearanace_internal_id = existing_season_appearance_ids[(channel_internal_id, season_internal_id)]
             
             video_id = playlist_item.get('contentDetails').get('videoId')
             video_published_at = playlist_item.get('contentDetails').get('videoPublishedAt')
@@ -288,7 +333,9 @@ def processPlaylistPage(response, season_internal_id):
                 thumbnail_uri=video_thumbnail_uri,
                 published_at=video_published_at)
             
-            addVideoToDb(video)
+            if video.youtube_id not in existing_video_youtube_ids:
+                addVideoToDb(video)
+                existing_video_youtube_ids.add(video.youtube_id)
 
 def parseChannel(channel_id):
     request = youtube.channels().list(
@@ -304,4 +351,8 @@ def parseChannel(channel_id):
     channel = Channel(youtube_id=channel_id, name=name, thumbnail_uri=thumbnail_uri)
     return channel
 
-processWikiData()
+
+seasons_to_process = [  
+                        'Hermitcraft Season 10']
+
+cProfile.run('processWikiData(filter=False, seasons_to_process=seasons_to_process)')

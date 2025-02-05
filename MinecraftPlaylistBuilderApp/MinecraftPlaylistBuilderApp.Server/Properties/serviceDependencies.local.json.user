@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "mssql1": {
+      "restored": true,
+      "restoreTime": "2025-02-05T18:14:52.6897612Z"
+    },
+    "secrets1": {
+      "restored": true,
+      "restoreTime": "2025-02-05T18:14:10.830472Z"
+    }
+  },
+  "parameters": {
+    "mssql1.subscriptionId": {
+      "Name": "mssql1.subscriptionId",
+      "Type": "subscription",
+      "Value": "f733e760-dfb1-4ffa-a3a1-ee2bf6f0f385"
+    },
+    "mssql1.resourceGroupName": {
+      "Name": "mssql1.resourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "MinecraftPlaylistBuilder_group"
+    },
+    "mssql1.serviceConnectorResourceGroupName": {
+      "Name": "mssql1.serviceConnectorResourceGroupName",
+      "Type": "resourceGroup",
+      "Value": "MinecraftPlaylistBuilder_group"
+    }
+  }
+}

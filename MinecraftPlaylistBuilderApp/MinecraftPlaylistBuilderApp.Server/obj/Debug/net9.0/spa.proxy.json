@@ -1,0 +1,10 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:51252",
+"RedirectUrl": "",
+"LaunchCommand": "npm run dev",
+"WorkingDirectory": "C:\\Users\\timco\\programming_projects\\minecraft-playlist-builder\\MinecraftPlaylistBuilderApp\\MinecraftPlaylistBuilderApp.Server\\..\\minecraftplaylistbuilderapp.client",
+"MaxTimeoutInSeconds": "120",
+"KeepRunning": "false"
+}
+}
