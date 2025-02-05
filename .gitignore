@@ -1,0 +1,8 @@
+.venv
+venv/
+data/
+.env
+env/
+queries/.vs/
+.vs
+.vs/

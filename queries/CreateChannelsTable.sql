@@ -1,0 +1,7 @@
+CREATE TABLE [Channels]
+(
+    ChannelId INTEGER IDENTITY PRIMARY KEY, 
+    ChannelYouTubeId NVARCHAR(64) UNIQUE NOT NULL,
+    ChannelName NVARCHAR(64) UNIQUE NOT NULL,
+    ChannelThumbnailUri NVARCHAR(2048) NOT NULL
+);

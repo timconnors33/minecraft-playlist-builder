@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinecraftPlaylistBuilderApp.Server", "MinecraftPlaylistBuilderApp.Server\MinecraftPlaylistBuilderApp.Server.csproj", "{963CE05F-A832-46AC-A182-86484B77B24C}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "minecraftplaylistbuilderapp.client", "minecraftplaylistbuilderapp.client\minecraftplaylistbuilderapp.client.esproj", "{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{963CE05F-A832-46AC-A182-86484B77B24C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{963CE05F-A832-46AC-A182-86484B77B24C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{963CE05F-A832-46AC-A182-86484B77B24C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{963CE05F-A832-46AC-A182-86484B77B24C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E17D2FE3-D650-4A31-8F10-54A5FA7CD002}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
