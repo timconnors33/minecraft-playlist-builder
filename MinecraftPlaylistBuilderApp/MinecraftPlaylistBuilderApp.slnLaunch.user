@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Full Stack",
+    "Projects": [
+      {
+        "Path": "MinecraftPlaylistBuilderApp.Server\\MinecraftPlaylistBuilderApp.Server.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "minecraftplaylistbuilderapp.client\\minecraftplaylistbuilderapp.client.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

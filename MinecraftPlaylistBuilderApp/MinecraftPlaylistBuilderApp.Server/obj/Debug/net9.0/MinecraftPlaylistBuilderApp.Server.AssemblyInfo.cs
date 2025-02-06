@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MinecraftPlaylistBuilderApp.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8178a01ef518c9fa1d7ed3924b503019bb97121d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e21ba4a916a76c0b6b12396afb1e3347ac5ec244")]
 [assembly: System.Reflection.AssemblyProductAttribute("MinecraftPlaylistBuilderApp.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MinecraftPlaylistBuilderApp.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

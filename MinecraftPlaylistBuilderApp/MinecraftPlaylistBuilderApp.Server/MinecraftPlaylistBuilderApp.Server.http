@@ -1,6 +1,9 @@
-@MinecraftPlaylistBuilderApp.Server_HostAddress = http://localhost:5159
+@MinecraftPlaylistBuilderApp.Server_HostAddress = https://localhost:7258
 
 GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/api/series/
+Accept: application/json
