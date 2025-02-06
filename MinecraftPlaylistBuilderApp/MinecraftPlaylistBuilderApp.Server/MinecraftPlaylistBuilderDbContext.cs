@@ -11,5 +11,7 @@ namespace MinecraftPlaylistBuilderApp.Server
         }
         public DbSet<Series> Series { get; set; }
         public DbSet<Season> Seasons { get; set; }
+        public DbSet<Channel> Channels { get; set; }
+        public DbSet<SeasonAppearance> SeasonAppearances { get; set; }
     }
 }

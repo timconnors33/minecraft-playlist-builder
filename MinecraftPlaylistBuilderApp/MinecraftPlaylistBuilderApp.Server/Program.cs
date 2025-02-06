@@ -16,10 +16,16 @@ builder.Services.AddOpenApi();
 
 var connectionString = builder.Configuration.GetConnectionString("DatabaseConnection");
 builder.Services.AddDbContext<MinecraftPlaylistBuilderDbContext>(options => options.UseSqlServer(connectionString));
+
 builder.Services.AddScoped<ISeriesRepository, SeriesRepository>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
+
 builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
 builder.Services.AddScoped<ISeasonService, SeasonService>();
+
+builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
+builder.Services.AddScoped<IChannelService, ChannelService>();
+
 builder.Services.AddControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-9.0
