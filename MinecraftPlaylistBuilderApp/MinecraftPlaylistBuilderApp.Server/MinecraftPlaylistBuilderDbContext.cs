@@ -10,5 +10,6 @@ namespace MinecraftPlaylistBuilderApp.Server
         {
         }
         public DbSet<Series> Series { get; set; }
+        public DbSet<Season> Seasons { get; set; }
     }
 }

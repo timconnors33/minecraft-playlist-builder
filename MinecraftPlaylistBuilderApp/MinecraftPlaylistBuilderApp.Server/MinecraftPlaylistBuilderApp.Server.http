@@ -7,3 +7,13 @@ Accept: application/json
 
 GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/api/series/
 Accept: application/json
+
+###
+
+GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/api/series/HerMitcraft/seasons
+Accept: application/json
+
+###
+
+GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/api/series/hermitcraft/seasons
+Accept: application/json

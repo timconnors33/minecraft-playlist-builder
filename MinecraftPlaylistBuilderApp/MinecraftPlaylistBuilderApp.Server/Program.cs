@@ -18,6 +18,8 @@ var connectionString = builder.Configuration.GetConnectionString("DatabaseConnec
 builder.Services.AddDbContext<MinecraftPlaylistBuilderDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<ISeriesRepository, SeriesRepository>();
 builder.Services.AddScoped<ISeriesService, SeriesService>();
+builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
+builder.Services.AddScoped<ISeasonService, SeasonService>();
 builder.Services.AddControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-9.0
