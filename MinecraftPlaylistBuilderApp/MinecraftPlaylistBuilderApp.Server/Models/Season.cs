@@ -12,5 +12,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Models
         public string SeasonTitle { get; set; }
         [Required]
         public bool IsCurrentSeason { get; set; }
+        public virtual ICollection<SeasonAppearance> SeasonAppearances { get; set; }
     }
 }

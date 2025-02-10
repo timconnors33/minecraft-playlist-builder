@@ -19,7 +19,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Controllers
                 var channels = await _channelService.GetChannelsBySeriesSeasonTitlesAsync(seriesTitle, seasonTitle);
                 if (channels == null || !channels.Any())
                 {
-                    return NotFound();
+                    return NotFound("No channels found for the specified season.");
                 }
                 return Ok(channels);
             }

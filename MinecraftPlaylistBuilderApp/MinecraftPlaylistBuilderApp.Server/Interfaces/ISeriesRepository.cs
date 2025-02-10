@@ -4,6 +4,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Interfaces
 {
     public interface ISeriesRepository
     {
-        Task<List<Series>> GetAllSeriesAsync();
+        Task<ICollection<Series>> GetAllSeriesAsync();
     }
 }

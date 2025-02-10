@@ -13,7 +13,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
             _context = context;
         }
 
-        public async Task<List<Series>> GetAllSeriesAsync()
+        public async Task<ICollection<Series>> GetAllSeriesAsync()
         {
             return (await _context.Series.ToListAsync());
         }

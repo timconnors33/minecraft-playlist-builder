@@ -9,9 +9,15 @@ namespace MinecraftPlaylistBuilderApp.Server
             : base(options)
         {
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
+        }
         public DbSet<Series> Series { get; set; }
         public DbSet<Season> Seasons { get; set; }
         public DbSet<Channel> Channels { get; set; }
         public DbSet<SeasonAppearance> SeasonAppearances { get; set; }
+        public DbSet<Video> Videos { get; set; }
     }
 }

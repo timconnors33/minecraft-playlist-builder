@@ -10,5 +10,8 @@ namespace MinecraftPlaylistBuilderApp.Server.Models
         public int SeasonId { get; set; }
         [Required]
         public int ChannelId { get; set; }
+        public virtual Season Season { get; set; }
+        public virtual Channel Channel { get; set; }
+        public virtual ICollection<Video> Videos { get; set; }
     }
 }

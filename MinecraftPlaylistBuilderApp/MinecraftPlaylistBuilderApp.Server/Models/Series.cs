@@ -8,5 +8,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Models
         public int SeriesId { get; set; }
         [Required]
         public string SeriesTitle { get; set; }
+        public virtual ICollection<Season> Seasons { get; set; }
     }
 }

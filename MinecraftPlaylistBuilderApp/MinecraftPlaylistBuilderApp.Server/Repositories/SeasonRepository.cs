@@ -11,7 +11,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
         {
             _context = context;
         }
-        public async Task<List<Season>> GetSeasonsBySeriesTitleAsync(string seriesTitle)
+        public async Task<ICollection<Season>> GetSeasonsBySeriesTitleAsync(string seriesTitle)
         {
             // TODO: Check whether more rigorous string comparison method is needed
             var matchingSeries = await _context.Series.SingleOrDefaultAsync(series => series.SeriesTitle == seriesTitle);
@@ -19,8 +19,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
             {
                 return [];
             }
-            int matchingSeriesId = matchingSeries.SeriesId;
-            List<Season> seasons = await _context.Seasons.Where(season => season.SeriesId == matchingSeriesId).ToListAsync();
+            ICollection<Season> seasons = matchingSeries.Seasons;
             return seasons;
         }
     }

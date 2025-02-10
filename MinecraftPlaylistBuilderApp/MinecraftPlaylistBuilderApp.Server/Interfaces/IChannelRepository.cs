@@ -4,6 +4,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Interfaces
 {
     public interface IChannelRepository
     {
-        Task<List<Channel>> GetChannelsBySeriesSeasonTitlesAsync(string seriesTitle, string seasonTitle);
+        Task<ICollection<Channel>> GetChannelsBySeriesSeasonTitlesAsync(string seriesTitle, string seasonTitle);
     }
 }
