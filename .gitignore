@@ -6,3 +6,7 @@ env/
 queries/.vs/
 .vs
 .vs/
+bin/
+bin
+obj/
+obj
