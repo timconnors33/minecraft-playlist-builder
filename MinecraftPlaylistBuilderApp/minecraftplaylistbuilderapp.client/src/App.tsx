@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { MenuItem } from '@mui/material';
+import SeriesSelect from './components/SeriesSelect';
+import SeasonSelect from './components/SeasonSelect';
 
 interface Series {
     seriesTitle: string;
@@ -11,11 +13,23 @@ interface Season {
     seasonTitle: string;
 }
 
+interface Channel {
+    channelName: string;
+    channelYouTubeId: string;
+    channelThumbnailUri: string;
+}
+
 function App() {
     const[seriesList, setSeriesList] = useState<Series[]>();
     // TODO: Check using undefined here
     const[selectedSeries, setSelectedSeries] = useState<string | undefined>(undefined);
+    
     const[seasons, setSeasons] = useState<Season[]>();
+    const [selectedSeason, setSelectedSeason] = useState<string | undefined>(undefined);
+
+    const [channels, setChannels] = useState<Channel[]>();
+    const [selectedChannels, setSelectedChannels] = useState<Channel[] | undefined>(undefined);
+    
 
     const populateSeriesListData = async () => {
         const response = await fetch('https://localhost:7258/api/series');
@@ -25,7 +39,7 @@ function App() {
         }
     }
 
-    const fetchSeasons = async(seriesTitle: string) => {
+    const fetchSeasons = async (seriesTitle: string) => {
         try {
             const response = await fetch(`https://localhost:7258/api/series/${seriesTitle}/seasons`);
             if (!response.ok) {
@@ -42,7 +56,25 @@ function App() {
         const selectedTitle = event.target.value as string;
         setSelectedSeries(selectedTitle);
         setSeasons([]);
+        setChannels([]);
         fetchSeasons(selectedTitle)
+    }
+
+    const handleSeasonChange = (event: SelectChangeEvent) => {
+        const selectedTitle = event.target.value as string;
+        setSelectedSeason(selectedTitle);
+        setChannels([]);
+        fetchChannels(selectedSeries, selectedSeason);
+    }
+
+    const fetchChannels = async (seriesTitle: string | undefined, seasonTitle: string | undefined) => {
+        try {
+            const response = await fetch(`https://localhost:7258/api/series/${seriesTitle}/seasons/${seasonTitle}/channels`)
+            const channelsData = await response.json();
+            setChannels(channelsData);
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     useEffect(() => {
@@ -52,82 +84,20 @@ function App() {
     return (
         <div>
             <h1 id="seriesListLabel">Series</h1>
-            <Select
-                value={selectedSeries}
-                label="Series"
-                onChange={handleSeriesChange}
-            >
-                {seriesList?.map((series) => (
-                    <MenuItem value={series.seriesTitle}>{series.seriesTitle}</MenuItem>
-                ))}
-            </Select>
+            <SeriesSelect 
+                seriesList={seriesList}
+                selectedSeries={selectedSeries}
+                onSeriesChange={handleSeriesChange}
+            />
             {selectedSeries && (
-                <>
-                    <Select
-                        label="Season"
-                    >
-                        {seasons?.map((season) => (
-                            <MenuItem value={season.seasonTitle}>{season.seasonTitle}</MenuItem>
-                        ))}
-                    </Select>
-                </>
+                <SeasonSelect
+                    seasons={seasons}
+                    selectedSeason={selectedSeason}
+                    onSeasonChange={handleSeasonChange}
+                />
             )}
         </div>
     );
 }
-
-/* interface Forecast {
-    date: string;
-    temperatureC: number;
-    temperatureF: number;
-    summary: string;
-}
-
-function App() {
-    const [forecasts, setForecasts] = useState<Forecast[]>();
-
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
-
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
-
-    return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
-    );
-
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
-        }
-    }
-} */
 
 export default App;
