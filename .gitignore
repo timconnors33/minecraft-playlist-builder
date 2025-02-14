@@ -10,9 +10,9 @@ bin/
 bin
 obj/
 obj
-.vite
-.vite/
 .vscode
 .vscode/
 node_modules
 node_modules/
+.user
+.sln
