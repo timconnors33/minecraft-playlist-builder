@@ -5,8 +5,8 @@ interface Season {
 }
 
 interface Props {
-    seasons: Season[] | undefined;
-    selectedSeason: string | undefined;
+    seasons: Season[];
+    selectedSeason: string;
     onSeasonChange: (event: SelectChangeEvent) => void;
 }
 

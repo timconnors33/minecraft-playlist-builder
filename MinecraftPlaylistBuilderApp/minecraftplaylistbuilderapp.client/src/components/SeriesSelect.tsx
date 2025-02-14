@@ -6,8 +6,8 @@ interface Series {
 }
 
 interface Props {
-    seriesList: Series[] | undefined;
-    selectedSeries: string | undefined;
+    seriesList: Series[];
+    selectedSeries: string;
     onSeriesChange: (event: SelectChangeEvent) => void;
 }
 
