@@ -29,6 +29,9 @@ builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<IVideoRepository, VideoRepository>();
 builder.Services.AddScoped<IVideoService, VideoService>();
 
+builder.Services.AddScoped<ISeasonAppearanceRepository, SeasonAppearanceRepository>();
+builder.Services.AddScoped<ISeasonAppearanceService, SeasonAppearanceService>();
+
 builder.Services.AddControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-9.0
