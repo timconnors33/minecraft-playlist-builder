@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material';
 import './App.css';
-import PlaylistInputForm from './components/PlaylistInputForm';
+import PlaylistInputForm from './features/playlist-input-form/components/PlaylistInputForm';
 import Header from './components/Header';
 
 const darkTheme = createTheme({

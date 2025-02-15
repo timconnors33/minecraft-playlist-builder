@@ -1,6 +1,6 @@
 import { Checkbox, FormControlLabel, FormGroup, SelectChangeEvent } from "@mui/material";
 import { useState, useEffect } from "react";
-import { Series, Season, Channel } from "../interfaces/api-interfaces";
+import { Series, Season, Channel } from "../../../interfaces/api-interfaces";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 
@@ -32,6 +32,7 @@ const PlaylistInputForm = () => {
                 throw new Error('Failed to fetch seasons');
             }
             const seasonsData = await response.json();
+            seasonsData.sort((a: Season, b: Season) => a.seasonTitle.localeCompare(b.seasonTitle, undefined, { numeric : true, sensitivity: 'base'}))
             setSeasons(seasonsData);
         } catch (err) {
             console.log(err);
@@ -57,6 +58,7 @@ const PlaylistInputForm = () => {
         try {
             const response = await fetch(`https://localhost:7258/api/series/${seriesTitle}/seasons/${seasonTitle}/channels`)
             const channelsData = await response.json();
+            channelsData.sort((a: Channel, b: Channel) => a.channelName.localeCompare(b.channelName, undefined, {numeric: true, sensitivity: 'base'}))
             setChannels(channelsData);
         } catch (err) {
             console.log(err);
