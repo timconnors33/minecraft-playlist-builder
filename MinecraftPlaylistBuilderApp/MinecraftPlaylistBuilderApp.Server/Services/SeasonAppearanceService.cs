@@ -11,25 +11,46 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
         {
             _repository = repository;
         }
-        public async Task<List<SeasonAppearanceDto>> GetAllSeasonAppearancesAsync()
+        public async Task<SeasonAppearanceDto> GetSeasonAppearanceDataAsync()
         {
-            var seasonAppearances = await _repository.GetAllSeasonAppearancesAsync();
-            if (seasonAppearances == null || !seasonAppearances.Any())
+            var seriesList = await _repository.GetAllSeriesAsync();
+            if (seriesList == null || !seriesList.Any())
             {
-                return [];
+                return null;
             }
-            var seasonAppearanceDtos = new List<SeasonAppearanceDto>();
-            foreach (var seasonAppearance in seasonAppearances)
+            var seriesDtos = new List<SeasonAppearanceSeriesDto>();
+            foreach (var series in seriesList)
             {
-                seasonAppearanceDtos.Add(new SeasonAppearanceDto(
-                    seasonAppearance.Season.Series.SeriesTitle,
-                    seasonAppearance.Season.SeasonTitle,
-                    seasonAppearance.Channel.ChannelName,
-                    seasonAppearance.Channel.ChannelYouTubeId,
-                    seasonAppearance.Channel.ChannelThumbnailUri
-                    ));
+                var seriesSeasons = new List<SeasonAppearanceSeasonDto>();
+                foreach (var season in series.Seasons)
+                {
+                    var seasonChannels = new List<SeasonAppearanceChannelDto>();
+                    foreach (var seasonAppearance in season.SeasonAppearances)
+                    {
+                        var channel = new SeasonAppearanceChannelDto
+                            (
+                                seasonAppearance.Channel.ChannelName,
+                                seasonAppearance.Channel.ChannelYouTubeId,
+                                seasonAppearance.Channel.ChannelThumbnailUri
+                            );
+                        seasonChannels.Add(channel);
+                    }
+                    var seasonDto = new SeasonAppearanceSeasonDto
+                        (
+                            season.SeasonTitle,
+                            seasonChannels
+                        );
+                    seriesSeasons.Add(seasonDto);
+                }
+                var seriesDto = new SeasonAppearanceSeriesDto
+                    (
+                        series.SeriesTitle,
+                        seriesSeasons
+                    );
+                seriesDtos.Add(seriesDto);
             }
-            return seasonAppearanceDtos;
+            var seasonAppearanceDto = new SeasonAppearanceDto(seriesDtos);
+            return seasonAppearanceDto;
         }
     }
 }

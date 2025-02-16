@@ -1,6 +1,7 @@
 ﻿namespace MinecraftPlaylistBuilderApp.Server.Dtos
 {
-    public record SeasonAppearanceDto(string seriesTitle, string seasonTitle, string channelName, string channelYouTubeId, string channelThumbnailUri)
-    {
-    }
+    public record SeasonAppearanceDto(IEnumerable<SeasonAppearanceSeriesDto> Series) { }
+    public record SeasonAppearanceSeriesDto(string SeriesTitle, IEnumerable<SeasonAppearanceSeasonDto> Seasons) { }
+    public record SeasonAppearanceSeasonDto(string SeasonTitle, IEnumerable<SeasonAppearanceChannelDto> Channels) { }
+    public record SeasonAppearanceChannelDto(string ChannelName, string ChannelYouTubeId, string ChannelThumbnailUri) { }
 }
