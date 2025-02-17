@@ -6,39 +6,27 @@ import SeriesSelect from "./SeriesSelect";
 
 const BASE_URL = 'https://localhost:7258';
 
-const fetchSeasonAppearance = async (): Promise<SeasonAppearance> => {
-    const response = await fetch(`${BASE_URL}/api/seasonappearances`)
-    if (!response.ok) {
-        throw new Error('Failed to fetch season appearance data');
-    }
-    const seasonAppearanceData: SeasonAppearance = await response.json();
-    console.log('Fetched season appearance data');
-    return seasonAppearanceData;
+interface Props {
+    seasonAppearance: SeasonAppearance;
 }
 
-const seasonAppearanceData: SeasonAppearance = await fetchSeasonAppearance();
-
-const PlaylistInputForm = () => {
-    const [seriesList, setSeriesList] = useState<Series[]>();
+const PlaylistInputForm = ({seasonAppearance}: Props) => {
+    const [seriesList, setSeriesList] = useState<Series[]>(seasonAppearance.series);
     // TODO: Check using undefined here
-    const [selectedSeries, setSelectedSeries] = useState<string>();
+    const [selectedSeries, setSelectedSeries] = useState<Series>();
 
     const [seasons, setSeasons] = useState<Season[]>();
-    const [selectedSeason, setSelectedSeason] = useState<string>();
+    const [selectedSeason, setSelectedSeason] = useState<Season>();
 
     const [channels, setChannels] = useState<Channel[]>();
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>();
 
-    const [seasonAppearance, setSeasonAppearance] = useState<SeasonAppearance>(seasonAppearanceData);
-
-    const populateSeriesListData = () => {
-        console.log(`Series: ${seasonAppearance.series}`);
-        setSeriesList(seasonAppearance.series);
-    }
-
     const fetchSeasons = async (seriesTitle: string) => {
         try {
             const seasonsData = seasonAppearance.series.find((s: Series) => s.seriesTitle == seriesTitle)?.seasons;
+            if (seasonsData === undefined) {
+                throw new Error('Could not find season data');
+            }
             seasonsData.sort((a: Season, b: Season) => a.seasonTitle.localeCompare(b.seasonTitle, undefined, { numeric: true, sensitivity: 'base' }))
             setSeasons(seasonsData);
         } catch (err) {
@@ -48,32 +36,35 @@ const PlaylistInputForm = () => {
 
     const handleSeriesChange = (event: SelectChangeEvent) => {
         const selectedTitle = event.target.value as string;
-        setSelectedSeries(selectedTitle);
+        setSelectedSeries(seasonAppearance.series.find((series : Series) => series.seriesTitle === selectedTitle));
         setSeasons([]);
         setChannels([]);
         fetchSeasons(selectedTitle)
     }
 
     const handleSeasonChange = (event: SelectChangeEvent) => {
-        const selectedTitle = event.target.value as string;
-        setSelectedSeason(selectedTitle);
-        setChannels([]);
-        fetchChannels(selectedSeries, selectedSeason);
+        if (selectedSeries) {
+            const selectedTitle = event.target.value as string;
+            setSelectedSeason(selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle));
+            setChannels([]);
+            fetchChannels();
+        }
     }
 
-    const fetchChannels = (seriesTitle: string, seasonTitle: string) => {
+    const fetchChannels = () => {
         try {
-            const channelsData = seasonAppearance.series.find((series: Series) => series.seriesTitle == seriesTitle).seasons.find((season: Season) => season.seasonTitle == seasonTitle).channels;
-            channelsData.sort((a: Channel, b: Channel) => a.channelName.localeCompare(b.channelName, undefined, { numeric: true, sensitivity: 'base' }));
-            setChannels(channelsData);
+            if (selectedSeason) {
+                const channelsData = selectedSeason?.channels;
+                if (!channelsData) {
+                    throw new Error('Could not find channel data');
+                }
+                channelsData.sort((a: Channel, b: Channel) => a.channelName.localeCompare(b.channelName, undefined, { numeric: true, sensitivity: 'base' }));
+                setChannels(channelsData);
+            }
         } catch (err) {
             console.log(err);
         }
     }
-
-    useEffect(() => {
-        populateSeriesListData();
-    }, []);
 
     return (
         <>
@@ -82,14 +73,12 @@ const PlaylistInputForm = () => {
                 selectedSeries={selectedSeries}
                 onSeriesChange={handleSeriesChange}
             />
-            {selectedSeries && (
                 <SeasonSelect
                     seasons={seasons}
                     selectedSeason={selectedSeason}
                     onSeasonChange={handleSeasonChange}
                 />
-            )}
-            {selectedSeason && (
+            {channels && (
                 <div>
                     <FormGroup>
                         {channels.map((channel) => (

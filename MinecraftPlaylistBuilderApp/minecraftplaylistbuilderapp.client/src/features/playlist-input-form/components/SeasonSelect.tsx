@@ -1,12 +1,9 @@
 import { SelectChangeEvent, Select, MenuItem } from "@mui/material";
-
-interface Season {
-    seasonTitle: string;
-}
+import { Season } from "../../../interfaces/api-interfaces";
 
 interface Props {
     seasons: Season[];
-    selectedSeason: string;
+    selectedSeason: Season | undefined;
     onSeasonChange: (event: SelectChangeEvent) => void;
 }
 
@@ -14,12 +11,12 @@ const SeasonSelect = ({seasons, selectedSeason, onSeasonChange}: Props) => {
     return (
         <>
             <Select
-                value={selectedSeason}
+                value={selectedSeason ? selectedSeason.seasonTitle : undefined}
                 label="Series"
                 onChange={onSeasonChange}
             >
                 {seasons?.map((season) => (
-                    <MenuItem value={season.seasonTitle}>{season.seasonTitle}</MenuItem>
+                    <MenuItem value={season.seasonTitle} key={season.seasonTitle}>{season.seasonTitle}</MenuItem>
                 ))}
             </Select>
         </>
