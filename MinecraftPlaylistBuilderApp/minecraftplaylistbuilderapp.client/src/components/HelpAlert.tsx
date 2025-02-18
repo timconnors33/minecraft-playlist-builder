@@ -37,7 +37,7 @@ const HelpAlert = () => {
                                 Use the drop-down menus to select the series and season of your choice.
                             </li>
                             <li>
-                                Choose all the channels you'd like to include in the playlist
+                                Choose all the channels you'd like to include in the playlist.
                             </li>
                             <li>
                                 Hit the submit button and follow the instructions to log in to your YouTube account.

@@ -1,5 +1,6 @@
 import { SelectChangeEvent, Select, MenuItem } from "@mui/material";
 import { Season } from "../../../interfaces/api-interfaces";
+import '../PlaylistInputForm.css'
 
 interface Props {
     seasons: Season[];

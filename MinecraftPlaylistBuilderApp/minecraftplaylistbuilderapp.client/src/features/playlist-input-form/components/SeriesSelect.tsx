@@ -15,6 +15,7 @@ const SeriesSelect = ({seriesList, selectedSeries, onSeriesChange} : Props) => {
                 value={selectedSeries && selectedSeries.seriesTitle}
                 label="Series"
                 onChange={onSeriesChange}
+                className='series-select'
             >
                 {seriesList?.map((series) => (
                     <MenuItem value={series.seriesTitle} key={series.seriesTitle}>{series.seriesTitle}</MenuItem>

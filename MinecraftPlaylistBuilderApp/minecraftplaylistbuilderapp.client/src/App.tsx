@@ -40,7 +40,7 @@ function App() {
             <CssBaseline/>
             <Header/>
             <div id='content'>
-                {(seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance}/> : <CircularProgress />)}
+                {(seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance}/> : <CircularProgress/>)}
             </div>
             </ThemeProvider>
         </>
