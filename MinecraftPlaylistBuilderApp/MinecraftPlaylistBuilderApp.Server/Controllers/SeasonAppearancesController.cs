@@ -12,21 +12,21 @@ namespace MinecraftPlaylistBuilderApp.Server.Controllers
         private readonly ISeasonAppearanceService _seasonAppearanceService = seasonAppearanceService;
 
         [HttpGet]
-        public async Task<ActionResult<List<SeasonAppearanceDto>>> GetAllSeasonAppearances()
+        public async Task<ActionResult<SeasonAppearanceDto>> GetAllSeasonAppearances()
         {
             try
             {
-                var seasonAppearanceDtos = await _seasonAppearanceService.GetAllSeasonAppearancesAsync();
-                if (seasonAppearanceDtos == null || !seasonAppearanceDtos.Any())
+                var seasonAppearanceDto = await _seasonAppearanceService.GetSeasonAppearanceDataAsync();
+                if (seasonAppearanceDto == null)
                 {
-                    return NotFound("No season appearances found.");
+                    return NotFound("No season appearance data found.");
                 }
-                return Ok(seasonAppearanceDtos);
+                return Ok(seasonAppearanceDto);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                return Problem("An error occured while getting the season appearances.");
+                return Problem("An error occured while getting the season appearance data.");
             }
         }
     }

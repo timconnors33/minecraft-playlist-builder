@@ -1,13 +1,10 @@
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { MenuItem } from '@mui/material';
-
-interface Series {
-    seriesTitle: string;
-}
+import { Series } from '../../../interfaces/api-interfaces';
 
 interface Props {
     seriesList: Series[];
-    selectedSeries: string;
+    selectedSeries: Series | undefined;
     onSeriesChange: (event: SelectChangeEvent) => void;
 }
 
@@ -15,12 +12,13 @@ const SeriesSelect = ({seriesList, selectedSeries, onSeriesChange} : Props) => {
     return (
         <>
             <Select
-                value={selectedSeries}
+                value={selectedSeries && selectedSeries.seriesTitle}
                 label="Series"
                 onChange={onSeriesChange}
+                className='series-select'
             >
                 {seriesList?.map((series) => (
-                    <MenuItem value={series.seriesTitle}>{series.seriesTitle}</MenuItem>
+                    <MenuItem value={series.seriesTitle} key={series.seriesTitle}>{series.seriesTitle}</MenuItem>
                 ))}
             </Select>
         </>

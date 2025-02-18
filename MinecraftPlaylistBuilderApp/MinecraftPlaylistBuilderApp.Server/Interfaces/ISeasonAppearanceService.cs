@@ -4,6 +4,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Interfaces
 {
     public interface ISeasonAppearanceService
     {
-        Task<List<SeasonAppearanceDto>> GetAllSeasonAppearancesAsync();
+        Task<SeasonAppearanceDto> GetSeasonAppearanceDataAsync();
     }
 }

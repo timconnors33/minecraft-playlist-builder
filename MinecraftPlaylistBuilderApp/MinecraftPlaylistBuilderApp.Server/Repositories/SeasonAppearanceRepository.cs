@@ -12,9 +12,9 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
         {
             _context = context;
         }
-        public async Task<List<SeasonAppearance>> GetAllSeasonAppearancesAsync()
+        public async Task<List<Series>> GetAllSeriesAsync()
         {
-            return (await _context.SeasonAppearances.ToListAsync());
+            return (await _context.Series.ToListAsync());
         }
     }
 }
