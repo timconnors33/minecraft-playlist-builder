@@ -1,27 +1,28 @@
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import { MenuItem } from '@mui/material';
+import { FormHelperText, MenuItem } from '@mui/material';
 import { Series } from '../../../interfaces/api-interfaces';
 
 interface Props {
     seriesList: Series[];
-    selectedSeries: Series | undefined;
+    selectedSeries: Series;
     onSeriesChange: (event: SelectChangeEvent) => void;
 }
 
-const SeriesSelect = ({seriesList, selectedSeries, onSeriesChange} : Props) => {
+const SeriesSelect = ({ seriesList, selectedSeries, onSeriesChange }: Props) => {
     return (
-        <>
+        <div>
+            <FormHelperText>Series</FormHelperText>
             <Select
                 value={selectedSeries && selectedSeries.seriesTitle}
                 label="Series"
                 onChange={onSeriesChange}
-                className='series-select'
+                id='series-select'
             >
                 {seriesList?.map((series) => (
                     <MenuItem value={series.seriesTitle} key={series.seriesTitle}>{series.seriesTitle}</MenuItem>
                 ))}
             </Select>
-        </>
+        </div>
     )
 }
 

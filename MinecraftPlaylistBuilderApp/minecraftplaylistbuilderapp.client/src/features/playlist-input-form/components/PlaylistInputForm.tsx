@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControlLabel, FormGroup, SelectChangeEvent } from "@mui/material";
+import { Button, Checkbox, FormControlLabel, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
 import { useState, useEffect, SetStateAction, FormEvent, ChangeEvent } from "react";
 import { Series, Season, Channel, SeasonAppearance } from "../../../interfaces/api-interfaces";
 import SeasonSelect from "./SeasonSelect";
@@ -18,6 +18,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const [selectedSeries, setSelectedSeries] = useState<Series>(seriesList[0]);
 
     const [seasons, setSeasons] = useState<Season[]>(selectedSeries.seasons);
+    // TODO: Might want to order the seasons alphanumerically here as well, maybe also the series above
     const [selectedSeason, setSelectedSeason] = useState<Season>(seasons[0]);
 
     const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
@@ -109,18 +110,21 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     return (
         <>
             <form>
-                <SeriesSelect
-                    seriesList={seriesList}
-                    selectedSeries={selectedSeries}
-                    onSeriesChange={handleSeriesChange}
-                />
-                <SeasonSelect
-                    seasons={seasons}
-                    selectedSeason={selectedSeason}
-                    onSeasonChange={handleSeasonChange}
-                />
+                <div id='select-container'>
+                    <SeriesSelect
+                        seriesList={seriesList}
+                        selectedSeries={selectedSeries}
+                        onSeriesChange={handleSeriesChange}
+                    />
+                    <SeasonSelect
+                        seasons={seasons}
+                        selectedSeason={selectedSeason}
+                        onSeasonChange={handleSeasonChange}
+                    />
+                </div>
                 {channels && (
                     <div>
+                        <FormHelperText>Channels</FormHelperText>
                         <FormGroup id='channel-checkboxes' style={{ overflowX: 'hidden', overflowY: 'auto' }}>
                             {channels.map((channel) => (
                                 <ChannelCheckbox
