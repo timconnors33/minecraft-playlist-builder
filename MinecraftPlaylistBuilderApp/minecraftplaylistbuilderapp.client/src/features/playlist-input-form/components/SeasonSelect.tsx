@@ -1,16 +1,17 @@
-import { SelectChangeEvent, Select, MenuItem } from "@mui/material";
+import { SelectChangeEvent, Select, MenuItem, FormHelperText } from "@mui/material";
 import { Season } from "../../../interfaces/api-interfaces";
 import '../PlaylistInputForm.css'
 
 interface Props {
     seasons: Season[];
-    selectedSeason: Season | undefined;
+    selectedSeason: Season;
     onSeasonChange: (event: SelectChangeEvent) => void;
 }
 
 const SeasonSelect = ({seasons, selectedSeason, onSeasonChange}: Props) => {
     return (
-        <>
+        <div>
+            <FormHelperText>Season</FormHelperText>
             <Select
                 value={selectedSeason ? selectedSeason.seasonTitle : undefined}
                 label="Series"
@@ -20,7 +21,7 @@ const SeasonSelect = ({seasons, selectedSeason, onSeasonChange}: Props) => {
                     <MenuItem value={season.seasonTitle} key={season.seasonTitle}>{season.seasonTitle}</MenuItem>
                 ))}
             </Select>
-        </>
+        </div>
     )
 }
 

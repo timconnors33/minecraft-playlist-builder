@@ -17,15 +17,6 @@
   flex: 1 1 auto;
 }
 
-header {
-  display: flex;
-  align-self: stretch;
-  padding: 1rem;
-  font-family: 'Courier New', Courier, monospace, sans-serif;
-  justify-content: space-between;
-  align-items: center;
-}
-
 body {
   margin: 0;
   display: flex;
@@ -64,12 +55,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
-
-a {
-  color: white;
-}
-
-a:hover {
-  color: grey;
 }

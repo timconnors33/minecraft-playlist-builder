@@ -1,9 +1,10 @@
-import { Checkbox, FormControlLabel, FormGroup, SelectChangeEvent } from "@mui/material";
-import { useState, useEffect, SetStateAction } from "react";
+import { Button, Checkbox, FormControlLabel, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
+import { useState, useEffect, SetStateAction, FormEvent, ChangeEvent } from "react";
 import { Series, Season, Channel, SeasonAppearance } from "../../../interfaces/api-interfaces";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
+import ChannelCheckbox from "./ChannelCheckbox";
 
 const BASE_URL = 'https://localhost:7258';
 
@@ -11,24 +12,17 @@ interface Props {
     seasonAppearance: SeasonAppearance;
 }
 
-interface SeasonAppearanceState {
-    seriesList: Series[];
-    selectedSeries: Series;
-    seasons: Season[];
-    selectedSeason: Season;
-    channels: Channel[];
-}
-
-const PlaylistInputForm = ({seasonAppearance}: Props) => {
+const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const [seriesList, setSeriesList] = useState<Series[]>(seasonAppearance.series);
     // TODO: Check using undefined here
-    const [selectedSeries, setSelectedSeries] = useState<Series>();
+    const [selectedSeries, setSelectedSeries] = useState<Series>(seriesList[0]);
 
-    const [seasons, setSeasons] = useState<Season[]>();
-    const [selectedSeason, setSelectedSeason] = useState<Season>();
+    const [seasons, setSeasons] = useState<Season[]>(selectedSeries.seasons);
+    // TODO: Might want to order the seasons alphanumerically here as well, maybe also the series above
+    const [selectedSeason, setSelectedSeason] = useState<Season>(seasons[0]);
 
-    const [channels, setChannels] = useState<Channel[]>();
-    const [selectedChannels, setSelectedChannels] = useState<Channel[]>();
+    const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
+    const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
 
     const fetchSeasons = async (seriesTitle: string) => {
         try {
@@ -45,7 +39,11 @@ const PlaylistInputForm = ({seasonAppearance}: Props) => {
 
     const handleSeriesChange = (event: SelectChangeEvent) => {
         const selectedTitle = event.target.value as string;
-        setSelectedSeries(seasonAppearance.series.find((series : Series) => series.seriesTitle === selectedTitle));
+        const series = seasonAppearance.series.find((series: Series) => series.seriesTitle === selectedTitle)
+        if (!series) {
+            throw new Error('The selected series could not be found.');
+        }
+        setSelectedSeries(series);
         setSeasons([]);
         setChannels([]);
         fetchSeasons(selectedTitle)
@@ -54,10 +52,41 @@ const PlaylistInputForm = ({seasonAppearance}: Props) => {
     const handleSeasonChange = (event: SelectChangeEvent) => {
         if (selectedSeries) {
             const selectedTitle = event.target.value as string;
-            setSelectedSeason(selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle));
+            const season = selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle)
+            if (!season) {
+                throw new Error('The selected season could not be found.');
+            }
+            setSelectedSeason(season);
             setChannels([]);
+            setSelectedChannels([]);
         }
     };
+
+    const handleSubmit = (event: FormEvent) => {
+        event.preventDefault();
+        const payload = {
+            seriesTitle: selectedSeries.seriesTitle,
+            seasonTitle: selectedSeason.seasonTitle,
+            channelNames: selectedChannels.map(channel => channel.channelName)
+        }
+        console.log(payload);
+    }
+
+    const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const channelName = event.target.name;
+        let newSelectedChannels : Channel[] = selectedChannels;
+        const channel = channels.find((selectedChannel: Channel) => selectedChannel.channelName === channelName)
+        if (!channel) {
+            throw new Error('The channel associated with the checkbox could not be found.')
+        }
+        if (selectedChannels.includes(channel)) {
+            const channelIndex = selectedChannels.indexOf(channel)
+            newSelectedChannels.splice(channelIndex, 1);
+        } else {
+            newSelectedChannels.push(channel)
+        }
+        setSelectedChannels(newSelectedChannels);
+    }
 
     useEffect(() => {
         const fetchChannels = () => {
@@ -70,7 +99,6 @@ const PlaylistInputForm = ({seasonAppearance}: Props) => {
                     }
                     channelsData.sort((a: Channel, b: Channel) => a.channelName.localeCompare(b.channelName, undefined, { numeric: true, sensitivity: 'base' }));
                     setChannels(channelsData);
-                    console.log(channelsData)
                 }
             } catch (err) {
                 console.log(err);
@@ -81,30 +109,37 @@ const PlaylistInputForm = ({seasonAppearance}: Props) => {
 
     return (
         <>
-            <SeriesSelect
-                seriesList={seriesList}
-                selectedSeries={selectedSeries}
-                onSeriesChange={handleSeriesChange}
-            />
-                <SeasonSelect
-                    seasons={seasons}
-                    selectedSeason={selectedSeason}
-                    onSeasonChange={handleSeasonChange}
-                />
-            {channels && (
-                <div>
-                    <FormGroup id='channel-checkboxes' style={{overflowX: 'hidden', overflowY: 'auto'}}>
-                        {channels.map((channel) => (
-                            <FormControlLabel
-                                control={
-                                    <Checkbox name={channel.channelName} />
-                                }
-                                label={channel.channelName}
-                            />
-                        ))}
-                    </FormGroup>
+            <form>
+                <div id='select-container'>
+                    <SeriesSelect
+                        seriesList={seriesList}
+                        selectedSeries={selectedSeries}
+                        onSeriesChange={handleSeriesChange}
+                    />
+                    <SeasonSelect
+                        seasons={seasons}
+                        selectedSeason={selectedSeason}
+                        onSeasonChange={handleSeasonChange}
+                    />
                 </div>
-            )}
+                {channels && (
+                    <div>
+                        <FormHelperText>Channels</FormHelperText>
+                        <FormGroup id='channel-checkboxes' style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                            {channels.map((channel) => (
+                                <ChannelCheckbox
+                                    channel={channel}
+                                    onChange={handleChannelCheckboxChange}
+                                    key={channel.channelName}
+                                />
+                            ))}
+                        </FormGroup>
+                    </div>
+                )}
+                <Button type="submit" onClick={handleSubmit}>
+                    Submit
+                </Button>
+            </form>
         </>
     );
 }

@@ -1,16 +1,15 @@
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HelpAlert from './HelpAlert';
 import { Button } from '@mui/material';
+import '../Header.css'
 
 const Header = () => {
     return (
         <header>
             <span>Minecraft Playlist Builder</span>
             <span>
-                <Button>
-                    <a href='https://github.com/'>
+                <Button href='https://github.com/'>
                         <GitHubIcon/>
-                    </a>
                 </Button>
                 <HelpAlert/>
             </span>
