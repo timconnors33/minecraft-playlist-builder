@@ -13,6 +13,7 @@ const ChannelCheckbox = ({ channel, onChange }: Props) => {
     return (
         <FormControlLabel
             control={
+                // TODO: Do I need key here?
                 <Checkbox name={channel.channelName} onChange={onChange} key={channel.channelName}/>
             }
             label={channel.channelName}

@@ -15,12 +15,12 @@ interface Props {
 const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const [seriesList, setSeriesList] = useState<Series[]>(seasonAppearance.series);
     // TODO: Check using undefined here
-    const [selectedSeries, setSelectedSeries] = useState<Series>();
+    const [selectedSeries, setSelectedSeries] = useState<Series>(seriesList[0]);
 
-    const [seasons, setSeasons] = useState<Season[]>();
-    const [selectedSeason, setSelectedSeason] = useState<Season>();
+    const [seasons, setSeasons] = useState<Season[]>(selectedSeries.seasons);
+    const [selectedSeason, setSelectedSeason] = useState<Season>(seasons[0]);
 
-    const [channels, setChannels] = useState<Channel[]>();
+    const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
 
     const fetchSeasons = async (seriesTitle: string) => {
@@ -38,7 +38,11 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const handleSeriesChange = (event: SelectChangeEvent) => {
         const selectedTitle = event.target.value as string;
-        setSelectedSeries(seasonAppearance.series.find((series: Series) => series.seriesTitle === selectedTitle));
+        const series = seasonAppearance.series.find((series: Series) => series.seriesTitle === selectedTitle)
+        if (!series) {
+            throw new Error('The selected series could not be found.');
+        }
+        setSelectedSeries(series);
         setSeasons([]);
         setChannels([]);
         fetchSeasons(selectedTitle)
@@ -47,7 +51,11 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const handleSeasonChange = (event: SelectChangeEvent) => {
         if (selectedSeries) {
             const selectedTitle = event.target.value as string;
-            setSelectedSeason(selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle));
+            const season = selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle)
+            if (!season) {
+                throw new Error('The selected season could not be found.');
+            }
+            setSelectedSeason(season);
             setChannels([]);
             setSelectedChannels([]);
         }
@@ -56,9 +64,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const handleSubmit = (event: FormEvent) => {
         event.preventDefault();
         const payload = {
-            series: selectedSeries,
-            season: selectedSeason,
-            channels: selectedChannels
+            seriesTitle: selectedSeries.seriesTitle,
+            seasonTitle: selectedSeason.seasonTitle,
+            channelNames: selectedChannels.map(channel => channel.channelName)
         }
         console.log(payload);
     }
@@ -118,6 +126,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                                 <ChannelCheckbox
                                     channel={channel}
                                     onChange={handleChannelCheckboxChange}
+                                    key={channel.channelName}
                                 />
                             ))}
                         </FormGroup>
