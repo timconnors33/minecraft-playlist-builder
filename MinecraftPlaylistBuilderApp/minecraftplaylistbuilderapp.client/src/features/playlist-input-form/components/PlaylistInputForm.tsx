@@ -1,6 +1,6 @@
 import { Button, Checkbox, FormControlLabel, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
 import { useState, useEffect, SetStateAction, FormEvent, ChangeEvent } from "react";
-import { Series, Season, Channel, SeasonAppearance } from "../../../interfaces/api-interfaces";
+import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload } from "../../../interfaces/api-interfaces";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
@@ -62,14 +62,30 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
     };
 
-    const handleSubmit = (event: FormEvent) => {
+    const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        const payload = {
+        const payload : GetVideosPayload = {
             seriesTitle: selectedSeries.seriesTitle,
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        console.log(payload);
+        await fetchVideos(payload);
+    }
+
+    const fetchVideos = async (payload : GetVideosPayload) => {
+        console.log(JSON.stringify(payload));
+        const response = await fetch(`${BASE_URL}/api/videos`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch video data');
+        }
+        const videos : Video[] = await response.json();
+        console.log(videos);
     }
 
     const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MinecraftPlaylistBuilderApp.Server.Dtos;
 using MinecraftPlaylistBuilderApp.Server.Interfaces;
@@ -7,23 +8,29 @@ using MinecraftPlaylistBuilderApp.Server.Services;
 
 namespace MinecraftPlaylistBuilderApp.Server.Controllers
 {
-    [Route("api/series/{seriesTitle}/seasons/{seasonTitle}/channels/{channelTitle}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class VideosController(IVideoService videoService) : ControllerBase
     {
         private readonly IVideoService _videoService = videoService;
 
-        [HttpGet]
-        public async Task<ActionResult<List<VideoDto>>> GetVideoBySeriesSeasonChannel(string seriesTitle, string seasonTitle, string channelTitle)
+        [HttpPost]
+        public async Task<ActionResult<List<VideoDto>>> GetVideoBySeriesSeasonChannel([FromBody] PostVideosDto postVideosDto)
         {
             try
             {
-                var videos = await _videoService.GetVideosBySeriesSeasonChannelAsync(seriesTitle, seasonTitle, channelTitle);
+                Console.WriteLine(postVideosDto.ToString());
+                var videos = await _videoService.GetVideosBySeriesSeasonChannelsAsync(postVideosDto.SeriesTitle, postVideosDto.SeasonTitle, postVideosDto.ChannelNames);
                 if (videos == null || !videos.Any())
                 {
-                    return NotFound("No videos found for the specified channel.");
+                    return NotFound("No videos found matching the specified parameters.");
                 }
                 return Ok(videos);
+            }
+            catch (JsonException jsonEx)
+            {
+                Console.WriteLine(jsonEx.Message);
+                return BadRequest("The request for videos is invalid.");
             }
             catch (Exception ex)
             {

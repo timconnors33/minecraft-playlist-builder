@@ -13,7 +13,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
             _context = context;
         }
        
-        public async Task<ICollection<Video>> GetVideosBySeriesSeasonChannelAsync(string seriesTitle, string seasonTitle, string channelTitle)
+        public async Task<ICollection<Video>> GetVideosBySeriesSeasonChannelsAsync(string seriesTitle, string seasonTitle, string[] channelNames)
         {
             var matchingSeries = await _context.Series.SingleOrDefaultAsync(series => series.SeriesTitle == seriesTitle);
             if (matchingSeries == null)
@@ -34,7 +34,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
             List<Video> videos = new List<Video>();
             foreach (var seasonAppearance in seasonAppearances)
             {
-                if (seasonAppearance.Channel.ChannelName == channelTitle)
+                if (channelNames.Contains(seasonAppearance.Channel.ChannelName))
                 {
                     videos.AddRange(seasonAppearance.Videos);
                 }

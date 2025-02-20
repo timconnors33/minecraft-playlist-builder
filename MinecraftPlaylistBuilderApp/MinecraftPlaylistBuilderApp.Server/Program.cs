@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using MinecraftPlaylistBuilderApp.Server;
 using MinecraftPlaylistBuilderApp.Server.Interfaces;
 using MinecraftPlaylistBuilderApp.Server.Repositories;
@@ -35,13 +37,14 @@ builder.Services.AddScoped<ISeasonAppearanceService, SeasonAppearanceService>();
 builder.Services.AddControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-9.0
-// TODO: See about which origin(s) to allow in production
+// TODO: See about which origin(s) and permissions to allow in production, if any
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: AllowedOrigins,
         policy =>
         {
             policy.WithOrigins("https://localhost:51252");
+            policy.AllowAnyHeader();
         });
 });
 

@@ -5,6 +5,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Interfaces
 {
     public interface IVideoService
     {
-        public Task<List<VideoDto>> GetVideosBySeriesSeasonChannelAsync(string seriesTitle, string seasonTitle, string channelName);
+        public Task<List<VideoDto>> GetVideosBySeriesSeasonChannelsAsync(string seriesTitle, string seasonTitle, string[] channelNames);
     }
 }

@@ -22,3 +22,16 @@ Accept: application/json
 
 GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/api/seasonappearances
 Accept: application/json
+
+###
+
+GET {{MinecraftPlaylistBuilderApp.Server_HostAddress}}/api/videos
+Content-Type: application/json
+
+{
+    "seriesTitle": "Hermitcraft",
+    "seasonTitle": "Season 9",
+    "channelNames": ["GoodTimesWithScar", "BdoubleO100"]
+}
+
+###
