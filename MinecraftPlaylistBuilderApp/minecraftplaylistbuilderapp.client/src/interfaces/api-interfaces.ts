@@ -17,3 +17,13 @@ export interface Channel {
 export interface SeasonAppearance {
     series: Series[];
 }
+
+export interface GetVideosPayload {
+    seriesTitle: string;
+    seasonTitle: string;
+    channelNames: string[];
+}
+
+export interface Video {
+    videoYouTubeId : string;
+}

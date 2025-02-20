@@ -12,9 +12,9 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
         {
             _videoRepository = videoRepository;
         }
-        public async Task<List<VideoDto>> GetVideosBySeriesSeasonChannelAsync(string seriesTitle, string seasonTitle, string channelName)
+        public async Task<List<VideoDto>> GetVideosBySeriesSeasonChannelsAsync(string seriesTitle, string seasonTitle, string[] channelNames)
         {
-            var videos = await _videoRepository.GetVideosBySeriesSeasonChannelAsync(seriesTitle, seasonTitle, channelName);
+            var videos = await _videoRepository.GetVideosBySeriesSeasonChannelsAsync(seriesTitle, seasonTitle, channelNames);
             if (videos == null)
             {
                 return [];
@@ -25,7 +25,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
             List<VideoDto> videoDtos = new List<VideoDto>();
             foreach (var video in videosInTimeOrder)
             {
-                videoDtos.Add(new VideoDto(video.VideoTitle, video.VideoYouTubeId, video.VideoThumbnailUri));
+                videoDtos.Add(new VideoDto(video.VideoYouTubeId));
             }
 
             return videoDtos;
