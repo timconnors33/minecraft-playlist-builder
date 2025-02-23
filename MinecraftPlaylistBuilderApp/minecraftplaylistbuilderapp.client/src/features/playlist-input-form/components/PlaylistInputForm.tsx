@@ -63,7 +63,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
     };
 
-    const youtubeAuthFlow = async (videos : Video[]) => {
+    const youtubeAuthFlow = async (videos: Video[]) => {
 
         try {
             let tokenClient;
@@ -101,14 +101,20 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                 tokenClient.requestAccessToken();
             }
 
-            const response = await window.gapi.client.youtube.playlists.list({
+            const response = await window.gapi.client.youtube.playlists.insert({
                 "part": [
-                  "snippet,contentDetails,status"
+                    "snippet,contentDetails,status"
                 ],
-                "channelId": "UCodkNmk9oWRTIYZdr_HuSlg",
-                "maxResults": 1
-              })
-    
+                "resource": {
+                    "snippet": {
+                        "title": "Test"
+                    },
+                    "status": {
+                        "privacyStatus": "private"
+                    }
+                }
+            })
+
             console.log(response);
         } catch (err) {
             console.log(err);
@@ -117,16 +123,16 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        const payload : GetVideosPayload = {
+        const payload: GetVideosPayload = {
             seriesTitle: selectedSeries.seriesTitle,
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        const videos : Video[] = await fetchVideos(payload);
+        const videos: Video[] = await fetchVideos(payload);
         await youtubeAuthFlow(videos);
     }
 
-    const fetchVideos = async (payload : GetVideosPayload) : Promise<Video[]> => {
+    const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
         console.log(JSON.stringify(payload));
         const response = await fetch(`${BASE_URL}/api/videos`, {
             method: "POST",
@@ -138,14 +144,14 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         if (!response.ok) {
             throw new Error('Failed to fetch video data');
         }
-        const videos : Video[] = await response.json();
+        const videos: Video[] = await response.json();
         console.log('Fetched videos');
         return videos;
     }
 
     const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const channelName = event.target.name;
-        let newSelectedChannels : Channel[] = selectedChannels;
+        let newSelectedChannels: Channel[] = selectedChannels;
         const channel = channels.find((selectedChannel: Channel) => selectedChannel.channelName === channelName)
         if (!channel) {
             throw new Error('The channel associated with the checkbox could not be found.')
