@@ -1,12 +1,13 @@
 import { Button, Checkbox, FormControlLabel, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
 import { useState, useEffect, SetStateAction, FormEvent, ChangeEvent } from "react";
-import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload } from "../../../interfaces/api-interfaces";
+import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload } from "../../../types/api";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
 import ChannelCheckbox from "./ChannelCheckbox";
 
 const BASE_URL = 'https://localhost:7258';
+const DEV_OAUTH2_CLIENT_ID = import.meta.env.VITE_REACT_APP_DEV_OAUTH2_CLIENT_ID;
 
 interface Props {
     seasonAppearance: SeasonAppearance;
@@ -62,6 +63,58 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
     };
 
+    const youtubeAuthFlow = async (videos : Video[]) => {
+
+        try {
+            let tokenClient;
+            let accessToken;
+            const loadGapiClient = async () => {
+                return new Promise((resolve, reject) => {
+                    if (!window.gapi) {
+                        reject(new Error("Google API not loaded"));
+                        return;
+                    }
+                    window.gapi.load('client', { callback: resolve, onerror: reject });
+                    console.log('Google API loaded');
+                });
+            };
+            await loadGapiClient();
+            await window.gapi.client.init({});
+            await window.gapi.client.load('https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest');
+
+            tokenClient = window.google.accounts.oauth2.initTokenClient({
+                client_id: DEV_OAUTH2_CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/youtube',
+                prompt: 'consent',
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        console.log('Got access token');
+                    } else {
+                        console.log('Did not get access token');
+                    }
+                },
+            });
+
+            if (!tokenClient) {
+                console.log('Token client is undefined');
+            } else {
+                tokenClient.requestAccessToken();
+            }
+
+            const response = await window.gapi.client.youtube.playlists.list({
+                "part": [
+                  "snippet,contentDetails,status"
+                ],
+                "channelId": "UCodkNmk9oWRTIYZdr_HuSlg",
+                "maxResults": 1
+              })
+    
+            console.log(response);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
         const payload : GetVideosPayload = {
@@ -69,10 +122,11 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        await fetchVideos(payload);
+        const videos : Video[] = await fetchVideos(payload);
+        await youtubeAuthFlow(videos);
     }
 
-    const fetchVideos = async (payload : GetVideosPayload) => {
+    const fetchVideos = async (payload : GetVideosPayload) : Promise<Video[]> => {
         console.log(JSON.stringify(payload));
         const response = await fetch(`${BASE_URL}/api/videos`, {
             method: "POST",
@@ -85,7 +139,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             throw new Error('Failed to fetch video data');
         }
         const videos : Video[] = await response.json();
-        console.log(videos);
+        console.log('Fetched videos');
+        return videos;
     }
 
     const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {

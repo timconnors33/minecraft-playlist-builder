@@ -1,5 +1,5 @@
 import { ChangeEvent, useState } from "react";
-import { Channel } from "../../../interfaces/api-interfaces";
+import { Channel } from "../../../types/api";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 

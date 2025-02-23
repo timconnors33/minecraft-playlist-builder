@@ -1,5 +1,5 @@
 import { SelectChangeEvent, Select, MenuItem, FormHelperText } from "@mui/material";
-import { Season } from "../../../interfaces/api-interfaces";
+import { Season } from "../../../types/api";
 import '../PlaylistInputForm.css'
 
 interface Props {
