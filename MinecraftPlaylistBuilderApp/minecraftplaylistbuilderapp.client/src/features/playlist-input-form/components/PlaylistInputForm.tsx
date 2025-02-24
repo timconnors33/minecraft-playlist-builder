@@ -1,10 +1,11 @@
-import { Button, Checkbox, FormControlLabel, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
-import { useState, useEffect, SetStateAction, FormEvent, ChangeEvent } from "react";
-import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload } from "../../../interfaces/api-interfaces";
+import { Button, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload } from "../../../types/api";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
 import ChannelCheckbox from "./ChannelCheckbox";
+import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 const BASE_URL = 'https://localhost:7258';
 
@@ -64,15 +65,16 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        const payload : GetVideosPayload = {
+        const payload: GetVideosPayload = {
             seriesTitle: selectedSeries.seriesTitle,
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        await fetchVideos(payload);
+        const videos: Video[] = await fetchVideos(payload);
+        //await handleAuth(videos);
     }
 
-    const fetchVideos = async (payload : GetVideosPayload) => {
+    const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
         console.log(JSON.stringify(payload));
         const response = await fetch(`${BASE_URL}/api/videos`, {
             method: "POST",
@@ -84,13 +86,14 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         if (!response.ok) {
             throw new Error('Failed to fetch video data');
         }
-        const videos : Video[] = await response.json();
-        console.log(videos);
+        const videos: Video[] = await response.json();
+        console.log('Fetched videos');
+        return videos;
     }
 
     const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const channelName = event.target.name;
-        let newSelectedChannels : Channel[] = selectedChannels;
+        let newSelectedChannels: Channel[] = selectedChannels;
         const channel = channels.find((selectedChannel: Channel) => selectedChannel.channelName === channelName)
         if (!channel) {
             throw new Error('The channel associated with the checkbox could not be found.')

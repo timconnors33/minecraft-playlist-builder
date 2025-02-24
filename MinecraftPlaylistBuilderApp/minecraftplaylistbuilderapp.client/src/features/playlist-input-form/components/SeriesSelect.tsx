@@ -1,6 +1,6 @@
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { FormHelperText, MenuItem } from '@mui/material';
-import { Series } from '../../../interfaces/api-interfaces';
+import { Series } from '../../../types/api';
 
 interface Props {
     seriesList: Series[];
