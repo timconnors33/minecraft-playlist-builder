@@ -71,6 +71,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
         const videos: Video[] = await fetchVideos(payload);
+        console.log(videos);
         //await handleAuth(videos);
     }
 

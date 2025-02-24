@@ -26,4 +26,7 @@ export interface GetVideosPayload {
 
 export interface Video {
     videoYouTubeId : string;
+    videoTitle : string;
+    videoThumbnailUri : string;
+    channelName : string;
 }
