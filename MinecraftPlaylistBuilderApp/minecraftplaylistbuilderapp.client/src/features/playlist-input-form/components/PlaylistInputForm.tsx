@@ -88,9 +88,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                 prompt: 'consent',
                 callback: (tokenResponse) => {
                     if (tokenResponse && tokenResponse.access_token) {
-                        createPlaylist();
+                        createPlaylist(videos);
                     } else {
-                        console.log('Did not get access token');
+                        throw new Error('Did not get access token');
                     }
                 },
             });
@@ -102,11 +102,11 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
     }
 
-    const createPlaylist = async () => {
+    const createPlaylist = async (videos: Video[]) => {
 
         const response = await window.gapi.client.youtube.playlists.insert({
             "part": [
-                "snippet,contentDetails,status"
+                "snippet,status"
             ],
             "resource": {
                 "snippet": {
@@ -119,6 +119,39 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         });
 
         console.log(response);
+
+        if (response.status !== 200) {
+            throw new Error('Could not create YouTube playlist');
+        }
+
+        const playlistId = response.result.id;
+
+        addVideosToPlaylist(videos, playlistId);
+    }
+
+    const addVideosToPlaylist = async (videos: Video[], playlistId: string) => {
+        for (const video of videos) {
+            const response = await window.gapi.client.youtube.playlistItems.insert({
+                "part": [
+                    "snippet"
+                ],
+                "resource": {
+                    "snippet": {
+                        "playlistId": playlistId,
+                        "resourceId": {
+                            "videoId": video.videoYouTubeId,
+                            "kind": "youtube#video"
+                        }
+                    }
+                }
+            });
+
+            if (response.status !== 200) {
+                throw new Error(`Could not insert video with ID of ${video.videoYouTubeId} into playlist`);
+            }
+
+            console.log(`Inserted video with ID of ${video.videoYouTubeId} into playlist`);
+        }
     }
 
     const handleSubmit = async (event: FormEvent) => {
