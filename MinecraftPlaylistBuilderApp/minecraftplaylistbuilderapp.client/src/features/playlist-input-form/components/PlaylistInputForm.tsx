@@ -88,37 +88,37 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                 prompt: 'consent',
                 callback: (tokenResponse) => {
                     if (tokenResponse && tokenResponse.access_token) {
-                        console.log('Got access token');
+                        createPlaylist();
                     } else {
                         console.log('Did not get access token');
                     }
                 },
             });
 
-            if (!tokenClient) {
-                console.log('Token client is undefined');
-            } else {
-                tokenClient.requestAccessToken();
-            }
+            tokenClient.requestAccessToken();
 
-            const response = await window.gapi.client.youtube.playlists.insert({
-                "part": [
-                    "snippet,contentDetails,status"
-                ],
-                "resource": {
-                    "snippet": {
-                        "title": "Test"
-                    },
-                    "status": {
-                        "privacyStatus": "private"
-                    }
-                }
-            })
-
-            console.log(response);
         } catch (err) {
             console.log(err);
         }
+    }
+
+    const createPlaylist = async () => {
+
+        const response = await window.gapi.client.youtube.playlists.insert({
+            "part": [
+                "snippet,contentDetails,status"
+            ],
+            "resource": {
+                "snippet": {
+                    "title": "Custom Minecraft Playlist"
+                },
+                "status": {
+                    "privacyStatus": "private"
+                }
+            }
+        });
+
+        console.log(response);
     }
 
     const handleSubmit = async (event: FormEvent) => {
