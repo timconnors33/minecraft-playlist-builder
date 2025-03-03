@@ -1,5 +1,6 @@
 import { useLocation } from "react-router";
 import { Video } from "../../types/api";
+import VideoCard from "./VideoCard";
 
 function PlaylistDisplay() {
 
@@ -11,11 +12,15 @@ function PlaylistDisplay() {
     return (
         <div>
             <h1>Playlist Videos</h1>
-            {videos.length > 0 ? (
-                videos.map((video) => <p key={video.videoYouTubeId}>{video.videoTitle}</p>)
-            ) : (
-                <p>No videos found.</p>
-            )}
+            <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
+                {videos.length > 0 ? (
+                    videos.map((video) => (
+                        <VideoCard key={video.videoYouTubeId} video={video}/>
+                    ))
+                ) : (
+                    <p>No videos found.</p>
+                )}
+            </div>
         </div>
     )
 }
