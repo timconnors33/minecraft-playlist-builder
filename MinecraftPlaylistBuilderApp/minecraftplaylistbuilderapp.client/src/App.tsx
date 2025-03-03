@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { Button, CircularProgress, CssBaseline } from '@mui/material';
+import { CircularProgress, CssBaseline } from '@mui/material';
 import './App.css';
 import PlaylistInputForm from './features/playlist-input-form/components/PlaylistInputForm';
 import Header from './components/Header';
 import { SeasonAppearance } from './types/api';
+import { Outlet, Route, Routes } from 'react-router';
+import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
 
 const darkTheme = createTheme({
     palette: {
@@ -13,6 +15,17 @@ const darkTheme = createTheme({
 })
 
 const BASE_URL = 'https://localhost:7258';
+
+function Layout() {
+    return (
+        <>
+            <Header />
+            <div id='content'>
+                <Outlet />
+            </div>
+        </>
+    );
+}
 
 function App() {
 
@@ -38,10 +51,12 @@ function App() {
         <>
             <ThemeProvider theme={darkTheme}>
                 <CssBaseline />
-                <Header />
-                <div id='content'>
-                    {(seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />)}
-                </div>
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />} />
+                        <Route path="playlist" element={<PlaylistDisplay />} />
+                    </Route>
+                </Routes>
             </ThemeProvider>
         </>
     )

@@ -5,7 +5,8 @@ import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
 import ChannelCheckbox from "./ChannelCheckbox";
-import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
+import { useNavigate } from "react-router"
+//import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 const BASE_URL = 'https://localhost:7258';
 
@@ -24,6 +25,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
+
+    let navigate = useNavigate();
 
     const fetchSeasons = async (seriesTitle: string) => {
         try {
@@ -71,8 +74,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
         const videos: Video[] = await fetchVideos(payload);
-        console.log(videos);
         //await handleAuth(videos);
+        navigate("/playlist", {state: {videos}});
     }
 
     const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
