@@ -9,7 +9,7 @@ function VideoCard({video} : Props) {
     return (
         <Card sx={{display: 'flex'}}>
             <CardContent>
-                <Link gutterBottom variant="h5" href={`https://www.youtube.com/watch?v=${video.videoYouTubeId}`} color="inherit">
+                <Link gutterBottom variant="h6" href={`https://www.youtube.com/watch?v=${video.videoYouTubeId}`} color="inherit">
                     {video.videoTitle}
                 </Link>
                 <Typography variant="body2" sx={{color: 'text.secondary', textAlign: 'start'}}>
