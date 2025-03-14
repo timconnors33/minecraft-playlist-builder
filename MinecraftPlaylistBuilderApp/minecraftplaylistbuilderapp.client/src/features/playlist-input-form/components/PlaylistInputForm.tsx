@@ -146,9 +146,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                     />
                 </div>
                 {channels && (
-                    <div>
+                    <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh'}}>
                         <FormHelperText>Channels</FormHelperText>
-                        <FormGroup id='channel-checkboxes' style={{ overflowX: 'hidden', overflowY: 'auto' }}>
+                        <FormGroup id='channel-checkboxes' >
                             {channels.map((channel) => (
                                 <ChannelCheckbox
                                     channel={channel}

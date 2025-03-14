@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from "react";
 import { Channel } from "../../../types/api";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import DOMPurify from "dompurify";
 
 interface Props {
     channel: Channel;
@@ -9,14 +10,15 @@ interface Props {
 }
 
 const ChannelCheckbox = ({ channel, onChange }: Props) => {
+    const pureChannelName = DOMPurify.sanitize(channel.channelName);
     // https://upmostly.com/tutorials/how-to-checkbox-onchange-react-js
     return (
         <FormControlLabel
             control={
                 // TODO: Do I need key here?
-                <Checkbox name={channel.channelName} onChange={onChange} key={channel.channelName}/>
+                <Checkbox name={DOMPurify.sanitize(pureChannelName)} onChange={onChange} key={pureChannelName}/>
             }
-            label={channel.channelName}
+            label={pureChannelName}
         />
     )
 }

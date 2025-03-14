@@ -28,6 +28,7 @@ function PlaylistDisplay() {
             <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
                 {pageVideos.length > 0 ? (
                     pageVideos.map((video) => (
+                        // TODO: Purify id? Check here and in VideoCard module
                         <VideoCard key={video.videoYouTubeId} video={video}/>
                     ))
                 ) : (
@@ -35,7 +36,7 @@ function PlaylistDisplay() {
                 )}
             </div>
             {videos.length > pageItemCount && (
-                <Pagination count={pageCount} page={page} onChange={handlePageChange}/>
+                <Pagination sx={{display: 'flex', justifyContent: 'center'}} count={pageCount} page={page} onChange={handlePageChange}/>
             )}
         </div>
     )
