@@ -1,6 +1,7 @@
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { FormHelperText, MenuItem } from '@mui/material';
 import { Series } from '../../../types/api';
+import DOMPurify from "dompurify";
 
 interface Props {
     seriesList: Series[];
@@ -13,13 +14,13 @@ const SeriesSelect = ({ seriesList, selectedSeries, onSeriesChange }: Props) => 
         <div>
             <FormHelperText>Series</FormHelperText>
             <Select
-                value={selectedSeries && selectedSeries.seriesTitle}
+                value={selectedSeries && DOMPurify.sanitize(selectedSeries.seriesTitle)}
                 label="Series"
                 onChange={onSeriesChange}
                 id='series-select'
             >
                 {seriesList?.map((series) => (
-                    <MenuItem value={series.seriesTitle} key={series.seriesTitle}>{series.seriesTitle}</MenuItem>
+                    <MenuItem value={DOMPurify.sanitize(series.seriesTitle)} key={DOMPurify.sanitize(series.seriesTitle)}>{DOMPurify.sanitize(series.seriesTitle)}</MenuItem>
                 ))}
             </Select>
         </div>

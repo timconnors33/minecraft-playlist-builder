@@ -1,6 +1,5 @@
 ﻿using MinecraftPlaylistBuilderApp.Server.Dtos;
 using MinecraftPlaylistBuilderApp.Server.Interfaces;
-using MinecraftPlaylistBuilderApp.Server.Models;
 
 namespace MinecraftPlaylistBuilderApp.Server.Services
 {
@@ -25,7 +24,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
             List<VideoDto> videoDtos = new List<VideoDto>();
             foreach (var video in videosInTimeOrder)
             {
-                videoDtos.Add(new VideoDto(video.VideoYouTubeId));
+                videoDtos.Add(new VideoDto(video.VideoYouTubeId, video.VideoTitle, video.VideoThumbnailUri, video.SeasonAppearance.Channel.ChannelName));
             }
 
             return videoDtos;
