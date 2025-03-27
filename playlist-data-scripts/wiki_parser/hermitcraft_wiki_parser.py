@@ -165,6 +165,3 @@ def parseSeriesPage():
             season_links.append(cur_season_link)
 
     return season_links
-
-
-writeSeasonAppearancesToFile()

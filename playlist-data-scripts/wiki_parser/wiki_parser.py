@@ -1,4 +1,4 @@
-import hermitcraft_wiki_parser
+from . import hermitcraft_wiki_parser
 import json
 
 def parse(only_current_seasons=True):
@@ -12,7 +12,5 @@ def parse(only_current_seasons=True):
                 new_series = series
                 new_series['seasons'] = filtered
                 processed_wiki_data.append(new_series)
+    #print(json.dumps(processed_wiki_data, indent=4))
     return processed_wiki_data
-
-data = parse(only_current_seasons=True)
-print(json.dumps(data, indent=4))
