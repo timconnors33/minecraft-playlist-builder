@@ -28,8 +28,10 @@ def filterDev(df):
 def runCurrentSeasons():
     df = wiki_parser.wiki_parser.parse()
     df = filterCurrentSeasons(df=df)
+    df = filterDev(df)
     filtered_filepath = writeToCsv(df=df, filepath='./data/filtered-wiki-data.csv')
     youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
     writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
+    loader.uploadData(video_metadata_df=youtube_metadata_df)
     
 runCurrentSeasons()
