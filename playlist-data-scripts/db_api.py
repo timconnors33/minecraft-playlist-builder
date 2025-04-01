@@ -2,12 +2,10 @@ from dotenv import load_dotenv, find_dotenv
 import pyodbc
 import os
 
-# TODO: Can this line be a top-level statement?
 load_dotenv(find_dotenv())
 db_conn_str = os.environ.get('DEV_ODBC_DB_CONNECTION_STRING')
 if os.environ.get('ENVIRONMENT') == 'production':
     db_conn_str = os.environ.get('ODBC_DB_CONNECTION_STRING')
-print('db_conn_str: ' + db_conn_str)
 
 def getChannels():
     sql_query = 'SELECT ChannelId, ChannelYoutubeId FROM [dbo].[Channels]'

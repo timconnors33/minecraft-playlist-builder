@@ -14,24 +14,15 @@ class SeasonAppearanceLink():
 # DTOs
 
 class VideoMetadata():
-    def __init__(self, series_title, season_title, video_id, video_title, video_thumbnail_uri, video_published_at, 
+    def __init__(self, video_id, video_title, video_thumbnail_uri, video_published_at, 
                  channel_id, channel_name, channel_thumbnail_uri):
-        self.series_title = series_title
-        self.season_title = season_title,
         self.video_id = video_id
         self.video_title = video_title
         self.video_thumbnail_uri = video_thumbnail_uri
         self.video_published_at = video_published_at
         self.channel_id = channel_id
-        self.channel_name = channel_name,
+        self.channel_name = channel_name
         self.channel_thumbnail_uri = channel_thumbnail_uri
-    def __repr__(self):
-        return (
-            f"Series Title: {self.series_title}\n"
-            f"Season Title: {self.season_title}\n"
-            f"Channel Name: {self.channel_name}\n"
-            f"Video Title: {self.video_title}\n"
-        )
 
 # Database objects
 

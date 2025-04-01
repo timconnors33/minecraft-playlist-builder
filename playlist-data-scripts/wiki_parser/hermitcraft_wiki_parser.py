@@ -3,11 +3,15 @@ from bs4 import BeautifulSoup
 import os
 import json
 import re
+import pandas as pd
+import file_handler
+import file_handler.file_handler
 
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
 CUR_VANILLA_SEASONS_SPAN_ID = "Current_Vanilla_Seasons"
 HERMITS_HEADER_SPAN_ID = "Hermits"
+SERIES_TITLE = "Hermitcraft"
 
 
 class SeasonLink():
@@ -22,17 +26,18 @@ class SeasonAppearanceLink():
         self.youtube_internal_link = youtube_internal_link
         self.link_type = link_type
 
+class SeasonAppearanceLinkAggregate():
+    def __init__(self, series_title, season_title, is_current_season, youtube_internal_link, link_type):
+        self.series_title = series_title
+        self.season_title = season_title
+        self.is_current_season = is_current_season
+        self.youtube_internal_link = youtube_internal_link
+        self.link_type = link_type
 
-def writeSeasonAppearancesToFile():
-    # TODO: This should be extracted to a more general-purpose, reusable function at
-    # some point
-    all_series_list = []
-    series_data = parseWikiPages()
-    all_series_list.append(series_data)
-    filepath = './data/hermitcraft/season-appearances.json'
-    if not os.path.exists(filepath):
-        with open(filepath, 'w') as f:
-            json.dump(all_series_list, f)
+
+def writeSeasonAppearanceLinksToFile():
+    season_appearance_links = parseWikiPages()
+    return file_handler.file_handler.writeToCsv(df=pd.DataFrame(season_appearance_links), filepath='./data/hermitcraft/season-appearances.csv')
 
 
 def getSoup(filepath, uri):
@@ -50,13 +55,9 @@ def getSoup(filepath, uri):
 
 
 def parseWikiPages():
-    series = {}
-    seasons = []
-    season_appearances = []
+    season_appearance_links = []
     season_links = parseSeriesPage()
     for season_link in season_links:
-        cur_season = {}
-        cur_season_appearances = []
         cur_season_appearance_links = parseSeasonPage(season_page_internal_link=season_link.internal_link)
         for cur_season_appearance_link in cur_season_appearance_links:
             # TODO: This looks quite silly, but I want to filter out seasons 1-5 for now because not all
@@ -66,15 +67,17 @@ def parseWikiPages():
             # https://stackoverflow.com/questions/5320525/regular-expression-to-match-last-number-in-a-string
             season_number = int(re.compile(r'.*(?:\D|^)(\d+)').findall(season_link.text)[0])
             if cur_season_appearance_link.link_type == 'playlist' or season_number >= 6:
-                cur_season_appearances.append(cur_season_appearance_link.__dict__)
-        cur_season['title'] = season_link.text
-        cur_season['is_current_season'] = season_link.is_current_season
-        cur_season['season_appearances'] = cur_season_appearances
-        seasons.append(cur_season)
-    series['title'] = 'Hermitcraft'
-    series['seasons'] = seasons
-    #print(json.dumps(series, indent=4))
-    return series
+                # TODO: Clean season text data if necessary
+                cur_season_appearance_link_agg = SeasonAppearanceLinkAggregate(
+                    series_title=SERIES_TITLE,
+                    season_title=season_link.text,
+                    is_current_season=season_link.is_current_season,
+                    youtube_internal_link=cur_season_appearance_link.youtube_internal_link,
+                    link_type=cur_season_appearance_link.link_type
+                )
+                season_appearance_links.append(cur_season_appearance_link_agg.__dict__)
+    #print(json.dumps(season_appearance_links, indent=4))
+    return season_appearance_links
 
 
 def parseSeasonTableBodies(table_bodies):

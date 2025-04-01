@@ -1,41 +1,41 @@
-import os
-import googleapiclient.discovery
-import cProfile
-import wiki_parser
-import wiki_parser.wiki_parser
 import db_api
 import data_objects
-
-YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
-PLAYLIST_ITEMS_REQUEST_PART = 'snippet,contentDetails,status'
-PLAYLIST_ITEMS_MAX_RESULTS = 50
-
-youtube = googleapiclient.discovery.build(
-        serviceName='youtube', version='v3', developerKey=YOUTUBE_API_KEY
-)
 
 existing_channel_ids = {}
 existing_season_appearance_ids = {}
 existing_video_youtube_ids = set()
 
-def processWikiData(series_list):
+def uploadData(video_metadata_list):
     getExistingData()
-    for series in series_list:
-        series_title = series['title']
-        series_internal_id = db_api.insertSeries(series_title=series_title)
-        for season in series['seasons']:
-            cur_season = data_objects.Season(title=season['title'], series_internal_id=series_internal_id, is_current_season=season['is_current_season'])
-            print('Currently processing ' + cur_season.title)
-            cur_season_internal_id = db_api.insertSeason(season=cur_season)
-            for wiki_season_appearance in season['season_appearances']:
-                    youtube_link = wiki_season_appearance['youtube_internal_link']
-                    if 'list=PL' in youtube_link:
-                        # TODO: This looks silly, but I want to make sure not to extract another
-                        # ID type. Will a 'list=' substring only ever be followed by a playlist ID?
-                        youtube_link = 'PL' + (youtube_link.split('list=PL', 1)[1]).split('&', 1)[0]
-                    else:
-                        youtube_link = getSeasonAppearancePlaylist(series_title=series_title, season_title=cur_season.title, channel_link=youtube_link)
-                    processPlaylistVideos(playlist_id=youtube_link, season_internal_id=cur_season_internal_id)
+    for video_metadata in video_metadata_list:
+        series_internal_id = db_api.insertSeries(series_title=video_metadata.series_title)
+        
+        season = data_objects.Season(title=video_metadata.season_title, series_internal_id=series_internal_id, is_current_season=video_metadata.is_current_season)
+        season_internal_id = db_api.insertSeason(season=season)
+        
+        if video_metadata.channel_id not in existing_channel_ids:
+            channel = data_objects.Channel(youtube_id=video_metadata.channel_id, name=video_metadata.channel_name, thumbnail_uri=video_metadata.channel_thumbnail_uri)
+            channel_internal_id = db_api.insertChannel(channel)
+            existing_channel_ids[video_metadata.channel_id] = channel_internal_id
+        else:
+            channel_internal_id = existing_channel_ids[video_metadata.channel_id]
+        
+        if (channel_internal_id, season_internal_id) not in existing_season_appearance_ids:
+            season_appearance = data_objects.SeasonAppearance(channel_internal_id=channel_internal_id, season_internal_id=season_internal_id)
+            season_appearanace_internal_id = db_api.insertSeasonAppearance(season_appearance)
+            existing_season_appearance_ids[(channel_internal_id, season_internal_id)] = season_appearanace_internal_id
+        else:
+            season_appearanace_internal_id = existing_season_appearance_ids[(channel_internal_id, season_internal_id)]
+        
+        if video_metadata.video_id not in existing_video_youtube_ids:
+            video = data_objects.Video(youtube_id=video_metadata.video_id, 
+                                       title=video_metadata.video_title, 
+                                       thumbnail_uri=video_metadata.thumbnail_uri,
+                                       published_at=video_metadata.published_at,
+                                       season_appearance_internal_id=season_appearanace_internal_id)
+            db_api.insertVideo(video)
+            existing_video_youtube_ids.add(video.youtube_id)
+        
 
 def getExistingData():
     getExistingChannels()
@@ -60,7 +60,7 @@ def getExistingVideos():
     for row in rows:
         existing_video_youtube_ids.add(row.VideoYouTubeId)
 
-def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
+""" def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
     if channel_link.startswith('@'):
         request = youtube.channels().list(
             part='snippet',
@@ -166,6 +166,4 @@ def parseChannel(channel_id):
     thumbnail_uri = snippet.get('thumbnails').get('high').get('url')
     name = snippet.get('title')
     channel = data_objects.Channel(youtube_id=channel_id, name=name, thumbnail_uri=thumbnail_uri)
-    return channel
-
-#cProfile.run('processWikiData(only_current_seasons=True)')
+    return channel """
