@@ -1,10 +1,7 @@
 import os
 import googleapiclient.discovery
 import data_objects
-import file_handler
 import pandas as pd
-
-import file_handler.file_handler
 
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
 PLAYLIST_ITEMS_REQUEST_PART = 'snippet,contentDetails,status'
@@ -25,8 +22,7 @@ def processLink(series_title, season_title, youtube_internal_link):
         processed_link = getSeasonAppearancePlaylist(series_title=series_title, season_title=season_title, channel_link=youtube_internal_link)
     return processed_link
 
-def processWikiData(input_filepath):
-    df = file_handler.file_handler.readFromCsv(input_filepath)
+def processWikiData(df):
     df['youtube_internal_link'] = df.apply(lambda row: processLink(series_title=row['series_title'], season_title=row['season_title'], youtube_internal_link=row['youtube_internal_link']), axis=1)
     
     df.pop('link_type')
@@ -35,9 +31,8 @@ def processWikiData(input_filepath):
     df = df.explode('video_metadata')
     metadata_df = pd.DataFrame(data=df['video_metadata'].values.tolist(), index=df.index)
     aggregated_df = pd.concat([df.drop('video_metadata', axis=1), metadata_df], axis=1)
-    output_filepath = './data/video_metadata.csv'
     
-    return file_handler.file_handler.writeToCsv(df=aggregated_df, filepath=output_filepath)
+    return aggregated_df
 
 def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
     if channel_link.startswith('@'):

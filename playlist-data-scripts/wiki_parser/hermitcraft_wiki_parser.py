@@ -4,8 +4,6 @@ import os
 import json
 import re
 import pandas as pd
-import file_handler
-import file_handler.file_handler
 
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
@@ -37,7 +35,7 @@ class SeasonAppearanceLinkAggregate():
 
 def writeSeasonAppearanceLinksToFile():
     season_appearance_links = parseWikiPages()
-    return file_handler.file_handler.writeToCsv(df=pd.DataFrame(season_appearance_links), filepath='./data/hermitcraft/season-appearances.csv')
+    return pd.DataFrame(season_appearance_links)
 
 
 def getSoup(filepath, uri):
