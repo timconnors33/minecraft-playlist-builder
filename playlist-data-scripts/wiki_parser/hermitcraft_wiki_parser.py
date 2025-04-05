@@ -4,6 +4,7 @@ import os
 import json
 import re
 import pandas as pd
+from urllib.parse import urlparse 
 
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
@@ -79,21 +80,28 @@ def parseWikiPages():
 
 
 def parseSeasonTableBodies(table_bodies):
-    youtube_link_pattern = re.compile(r'https://youtube.com/|https://www.youtube.com/|http://www.youtube.com/')
     season_appearances = []
     for table_body in table_bodies:
         anchors = table_body.find_all('a')
         for anchor in anchors:
-            if anchor.has_attr('href') and youtube_link_pattern.match(anchor['href']):
-                youtube_internal_link = anchor['href'] \
-                    .replace('https://youtube.com/', '') \
-                    .replace('https://www.youtube.com/', '') \
-                    .replace('http://www.youtube.com/', '')
-                link_type = 'channel'
-                if 'list=PL' in youtube_internal_link:
-                    link_type = 'playlist'
-                season_appearance = SeasonAppearanceLink(youtube_internal_link=youtube_internal_link, link_type=link_type)
-                season_appearances.append(season_appearance)
+            # TODO: Assume that all anchors have an href or no?
+            if anchor.has_attr('href'):
+                parsed = urlparse(anchor['href'])
+                if (parsed.scheme == 'http' or parsed.scheme == 'https') and (parsed.netloc == 'www.youtube.com' or parsed.netloc == 'youtube.com'):
+                    if parsed.path == '/playlist' or 'list=PL' in parsed.query:
+                        link_type = 'playlist'
+                        youtube_internal_link = getPlaylistId(youtube_internal_link=parsed.query)
+                    else:
+                        link_type = 'channel'
+                        youtube_internal_link = parsed.path
+                        # Could reformat this to not use any if statements and just get the string at parsed.path.count('/'),
+                        # however I think this relationship is coincidential rather than intrinsic.
+                        if parsed.path.count('/') == 1:
+                            youtube_internal_link = parsed.path.split('/')[1]
+                        if parsed.path.count('/') >= 2:
+                            youtube_internal_link = parsed.path.split('/')[2]
+                    season_appearance = SeasonAppearanceLink(youtube_internal_link=youtube_internal_link, link_type=link_type)
+                    season_appearances.append(season_appearance)
 
     return season_appearances
 
@@ -151,7 +159,7 @@ def parseSeriesPage():
     cur_season_links = parseSeriesTable(soup=soup, series_table_id=CUR_VANILLA_SEASONS_SPAN_ID)
 
     """
-    The time complexity on this is horrible, but the amount of elements involved should
+    TODO: The time complexity on this is horrible, but the amount of elements involved should
     be small enough to where it is not an issue.
     """
     season_links.extend(past_season_links)
@@ -166,3 +174,9 @@ def parseSeriesPage():
             season_links.append(cur_season_link)
 
     return season_links
+
+def getPlaylistId(youtube_internal_link):
+    # TODO: This looks silly, but I want to make sure not to extract another
+    # ID type. Will a 'list=' substring only ever be followed by a playlist ID?
+    processed_link = 'PL' + (youtube_internal_link.split('list=PL', 1)[1]).split('&', 1)[0]
+    return processed_link
