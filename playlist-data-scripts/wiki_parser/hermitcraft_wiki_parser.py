@@ -94,7 +94,7 @@ def parseSeasonTableBodies(table_bodies):
                     else:
                         link_type = 'channel'
                         youtube_internal_link = parsed.path
-                        # Could reformat this to not use any if statements and just get the string at parsed.path.count('/'),
+                        # Could maybe reformat this to not use any if statements and just get the string at parsed.path.count('/'),
                         # however I think this relationship is coincidential rather than intrinsic.
                         if parsed.path.count('/') == 1:
                             youtube_internal_link = parsed.path.split('/')[1]

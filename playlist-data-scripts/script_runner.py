@@ -5,6 +5,7 @@ import wiki_parser.wiki_parser
 import youtube_api_handler
 import loader
 import pandas as pd
+import cProfile
 
 load_dotenv(find_dotenv())
 
@@ -22,17 +23,38 @@ def filterCurrentSeasons(df):
     return new_df
 
 def filterDev(df):
-    new_df = df.drop(df[df['youtube_internal_link'] != 'playlist?list=PL2XncHqN_7yI07heM6HAV-FBL80eeEZ0a&si=dY0mOyIwhi8hW8A2'].index)
+    new_df = df.drop(df[df['season_title'] != 'Season 9'].index)
+    # Scar's, Bdub's, and Ethos's season 9 videos
+    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab']
+    new_df = new_df[new_df['youtube_internal_link'].isin(allowed_links)]
     return new_df
 
+def runDev():
+    if os.environ.get('ENVIRONMENT') == 'development': 
+        df = wiki_parser.wiki_parser.parse()
+        writeToCsv(df=df, filepath='./data/raw-wiki-data.csv')
+        df = filterDev(df)
+        writeToCsv(df=df, filepath='./data/filtered-wiki-data.csv')
+        youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
+        writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
+        loader.uploadData(video_metadata_df=youtube_metadata_df)
+    else:
+        print('Environment is not set to development.')
+
 def runCurrentSeasons():
+    print('Fetching data for current seasons')
     df = wiki_parser.wiki_parser.parse()
     writeToCsv(df=df, filepath='./data/raw-wiki-data.csv')
     df = filterCurrentSeasons(df=df)
-    df = filterDev(df)
-    filtered_filepath = writeToCsv(df=df, filepath='./data/filtered-wiki-data.csv')
-    """ youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
+    writeToCsv(df=df, filepath='./data/filtered-wiki-data.csv')
+    youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
     writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
-    loader.uploadData(video_metadata_df=youtube_metadata_df) """
-    
-runCurrentSeasons()
+    loader.uploadData(video_metadata_df=youtube_metadata_df)
+
+def runAllSeasons():
+    print('Fetching data for all seasons')
+    df = wiki_parser.wiki_parser.parse()
+    writeToCsv(df=df, filepath='./data/raw-wiki-data.csv')
+    youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
+    writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
+    loader.uploadData(video_metadata_df=youtube_metadata_df)

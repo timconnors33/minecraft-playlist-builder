@@ -13,17 +13,16 @@ youtube = googleapiclient.discovery.build(
 
 channels = {}
 
-def processLink(series_title, season_title, youtube_internal_link):
-    if 'list=PL' in youtube_internal_link:
-        # TODO: This looks silly, but I want to make sure not to extract another
-        # ID type. Will a 'list=' substring only ever be followed by a playlist ID?
-        processed_link = 'PL' + (youtube_internal_link.split('list=PL', 1)[1]).split('&', 1)[0]
+def processLink(series_title, season_title, youtube_internal_link, id_type):
+    if id_type == 'playlist':
+        processed_link = youtube_internal_link
     else:
         processed_link = getSeasonAppearancePlaylist(series_title=series_title, season_title=season_title, channel_link=youtube_internal_link)
     return processed_link
 
 def processWikiData(df):
-    df['youtube_internal_link'] = df.apply(lambda row: processLink(series_title=row['series_title'], season_title=row['season_title'], youtube_internal_link=row['youtube_internal_link']), axis=1)
+    df['youtube_internal_link'] = df.apply(lambda row: processLink(series_title=row['series_title'], season_title=row['season_title'], 
+                                                                   youtube_internal_link=row['youtube_internal_link'], id_type=row['link_type']), axis=1)
     
     df.pop('link_type')
     
@@ -43,7 +42,6 @@ def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
         )
         
     else:
-        channel_link = channel_link.replace('user/', '')
         request = youtube.channels().list(
             part='snippet',
             forUsername=channel_link,
