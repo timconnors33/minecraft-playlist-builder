@@ -58,3 +58,5 @@ def runAllSeasons():
     youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
     writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
     loader.uploadData(video_metadata_df=youtube_metadata_df)
+
+#cProfile.run('runDev()')

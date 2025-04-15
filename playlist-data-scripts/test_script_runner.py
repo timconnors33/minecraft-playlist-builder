@@ -22,10 +22,10 @@ def cleanUpDatabase():
     conn = pyodbc.connect(db_conn_str)
     cursor = conn.cursor()
     
-    sql_query = """ DELETE FROM [dbo].[Seasons];
-                    DELETE FROM [dbo].[Series];
+    sql_query = """ DELETE FROM [dbo].[Videos];
                     DELETE FROM [dbo].[SeasonAppearances];
-                    DELETE FROM [dbo].[Videos];
+                    DELETE FROM [dbo].[Seasons];
+                    DELETE FROM [dbo].[Series];
                     DELETE FROM [dbo].[Channels];"""
 
     cursor.execute(sql_query)
@@ -35,5 +35,7 @@ def cleanUpDatabase():
     conn.close()
     
 def test_playlist_pagination(setupTeardownDevDatabase):
-    videos = db_api.getVideos()
-    assert len(videos) == 1
+    scar_channel = [c for c in db_api.getChannels() if c.ChannelYouTubeId == 'UCodkNmk9oWRTIYZdr_HuSlg'].pop()
+    scar_season_appearance = [s for s in db_api.getSeasonAppearances() if s.ChannelId == scar_channel.ChannelId].pop()
+    scar_videos = [v for v in db_api.getVideos() if v.SeasonAppearanceId == scar_season_appearance.SeasonAppearanceId]
+    assert len(scar_videos) > 50

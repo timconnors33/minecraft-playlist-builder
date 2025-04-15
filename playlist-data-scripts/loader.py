@@ -1,6 +1,8 @@
 import db_api
 import data_objects
 
+existing_series_ids = {}
+existing_season_ids = {}
 existing_channel_ids = {}
 existing_season_appearance_ids = {}
 existing_video_youtube_ids = set()
@@ -10,10 +12,19 @@ def uploadData(video_metadata_df):
     video_metadata_df.apply(processVideoMetadata, axis=1)
 
 def processVideoMetadata(video_metadata):
-        series_internal_id = db_api.insertSeries(series_title=video_metadata.series_title)
+    
+        if video_metadata.series_title not in existing_series_ids:
+            series_internal_id = db_api.insertSeries(series_title=video_metadata.series_title)
+            existing_series_ids[video_metadata.series_title] = series_internal_id
+        else :
+            series_internal_id = existing_series_ids[video_metadata.series_title]
         
-        season = data_objects.Season(title=video_metadata.season_title, series_internal_id=series_internal_id, is_current_season=video_metadata.is_current_season)
-        season_internal_id = db_api.insertSeason(season=season)
+        if (video_metadata.series_title, video_metadata.season_title) not in existing_season_ids:
+            season = data_objects.Season(title=video_metadata.season_title, series_internal_id=series_internal_id, is_current_season=video_metadata.is_current_season)
+            season_internal_id = db_api.insertSeason(season=season)
+            existing_season_ids[(video_metadata.series_title, video_metadata.season_title)] = season_internal_id
+        else:
+            season_internal_id = existing_season_ids[(video_metadata.series_title, video_metadata.season_title)]
         
         if video_metadata.channel_id not in existing_channel_ids:
             channel = data_objects.Channel(youtube_id=video_metadata.channel_id, name=video_metadata.channel_name, thumbnail_uri=video_metadata.channel_thumbnail_uri)
@@ -39,9 +50,23 @@ def processVideoMetadata(video_metadata):
             existing_video_youtube_ids.add(video.youtube_id)
 
 def getExistingData():
+    getExistingSeries()
+    getExistingSeasons()
     getExistingChannels()
     getExistingSeasonAppearances()
     getExistingVideos()
+    
+def getExistingSeries():
+    rows = db_api.getSeries()
+    
+    for row in rows:
+        existing_series_ids[row.SeriesTitle] = row.SeriesId
+        
+def getExistingSeasons():
+    rows = db_api.getSeasons()
+    
+    for row in rows:
+        existing_season_ids[(row.SeriesTitle, row.SeasonTitle)] = row.SeasonId
 
 def getExistingChannels():
     rows = db_api.getChannels()
