@@ -8,7 +8,7 @@ if os.environ.get('ENVIRONMENT') == 'production':
     db_conn_str = os.environ.get('ODBC_DB_CONNECTION_STRING')
 
 def getChannels():
-    sql_query = 'SELECT ChannelId, ChannelYouTubeId FROM [dbo].[Channels]'
+    sql_query = 'SELECT ChannelId, ChannelYouTubeId, ChannelThumbnailUri FROM [dbo].[Channels]'
     rows = getAll(sql_query=sql_query)
 
     return rows

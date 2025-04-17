@@ -77,4 +77,20 @@ def test_season_appearance_upload(setupTeardownDevDatabase):
     assert len(scar_season_appearances) == 2
     assert len([s for s in scar_season_appearances if s.SeasonId == hermitcraft_season_9.SeasonId]) == 1
     assert len([s for s in scar_season_appearances if s.SeasonId == third_life.SeasonId]) == 1
+
+def test_sql_injection_prevention(setupTeardownDevDatabase):
+    original_channels = db_api.getChannels()
+    sql_query = '''
+        INSERT INTO [dbo].[Channels] (ChannelYouTubeId, ChannelName, ChannelThumbnailUri)
+        VALUES (?, ?, ?)
+    '''
+    params = ('sqlInjectionTestYouTubeId', 'sqlInjectionTestChannelName', "'); DELETE FROM [dbo].[Channels]; -- ');")
+    db_api.insert(sql_query=sql_query, params=params)
+    
+    new_channels = db_api.getChannels()
+    
+    assert len(original_channels) >= 1
+    assert len(new_channels) == len(original_channels) + 1
+    assert len([c for c in new_channels if c.ChannelThumbnailUri == "'); DELETE FROM [dbo].[Channels]; -- ');"]) == 1
+    
     
