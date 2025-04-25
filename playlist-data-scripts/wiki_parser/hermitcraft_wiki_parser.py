@@ -3,8 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import json
 import re
-import pandas as pd
-from urllib.parse import urlparse 
+from urllib.parse import urlparse
 
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
@@ -32,11 +31,6 @@ class SeasonAppearanceLinkAggregate():
         self.is_current_season = is_current_season
         self.youtube_internal_link = youtube_internal_link
         self.link_type = link_type
-
-
-def writeSeasonAppearanceLinksToFile():
-    season_appearance_links = parseWikiPages()
-    return pd.DataFrame(season_appearance_links)
 
 
 def getSoup(filepath, uri):
