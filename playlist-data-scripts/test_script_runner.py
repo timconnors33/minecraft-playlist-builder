@@ -71,7 +71,7 @@ def test_season_appearance_upload(setupTeardownDevDatabase):
     scar_channel = [c for c in db_api.getChannels() if c.ChannelYouTubeId == 'UCodkNmk9oWRTIYZdr_HuSlg'].pop()
     scar_season_appearances = [s for s in season_appearances if s.ChannelId == scar_channel.ChannelId]
     hermitcraft_season_9 = [s for s in db_api.getSeasons() if s.SeasonTitle == 'Season 9' and s.SeriesTitle == 'Hermitcraft'].pop()
-    third_life = [s for s in db_api.getSeasons() if s.SeasonTitle == 'Third Life' and s.SeriesTitle == 'Life Series'].pop()
+    third_life = [s for s in db_api.getSeasons() if s.SeasonTitle == '3rd Life' and s.SeriesTitle == 'Life Series'].pop()
     
     assert len(season_appearances) == 4
     assert len(scar_season_appearances) == 2

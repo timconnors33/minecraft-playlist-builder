@@ -23,16 +23,11 @@ def filterCurrentSeasons(df):
     return new_df
 
 def filterDev(df):
-    new_df = df.drop(df[df['season_title'] != 'Season 9'].index)
-    # Scar's, Bdub's, and Ethos's season 9 videos
-    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab']
+    filtered_seasons = ['Season 9', '3rd Life']
+    new_df = df[df['season_title'].isin(filtered_seasons)]
+    # Scar's, Bdub's, and Ethos's season 9 videos and Scar's Third Life playlist
+    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab', 'PLSCZsQa9VSCf4dGJL_0U1wt2UaPhUbTqB']
     new_df = new_df[new_df['youtube_internal_link'].isin(allowed_links)]
-    scar_third_life = [{'series_title': 'Life Series',
-                        'season_title': 'Third Life',
-                        'is_current_season': 'False',
-                        'youtube_internal_link': 'PLSCZsQa9VSCf4dGJL_0U1wt2UaPhUbTqB',
-                        'link_type': 'playlist'}]
-    new_df = pd.concat([new_df, pd.DataFrame(scar_third_life)])
     return new_df
 
 def runDev():

@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import os
 import json
 import re
+import pandas as pd
 from urllib.parse import urlparse
 
 
@@ -70,7 +71,7 @@ def parseWikiPages():
                 )
                 season_appearance_links.append(cur_season_appearance_link_agg.__dict__)
     #print(json.dumps(season_appearance_links, indent=4))
-    return season_appearance_links
+    return pd.DataFrame(season_appearance_links)
 
 
 def parseSeasonTableBodies(table_bodies):
