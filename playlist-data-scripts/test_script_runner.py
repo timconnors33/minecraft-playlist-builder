@@ -73,7 +73,7 @@ def test_season_appearance_upload(setupTeardownDevDatabase):
     hermitcraft_season_9 = [s for s in db_api.getSeasons() if s.SeasonTitle == 'Season 9' and s.SeriesTitle == 'Hermitcraft'].pop()
     third_life = [s for s in db_api.getSeasons() if s.SeasonTitle == '3rd Life' and s.SeriesTitle == 'Life Series'].pop()
     
-    assert len(season_appearances) == 4
+    assert len(season_appearances) == 5
     assert len(scar_season_appearances) == 2
     assert len([s for s in scar_season_appearances if s.SeasonId == hermitcraft_season_9.SeasonId]) == 1
     assert len([s for s in scar_season_appearances if s.SeasonId == third_life.SeasonId]) == 1
@@ -92,5 +92,18 @@ def test_sql_injection_prevention(setupTeardownDevDatabase):
     assert len(original_channels) >= 1
     assert len(new_channels) == len(original_channels) + 1
     assert len([c for c in new_channels if c.ChannelThumbnailUri == "'); DELETE FROM [dbo].[Channels]; -- ');"]) == 1
+
+def test_third_life_upload(setupTeardownDevDatabase):
+    channels = db_api.getChannels()
+    scar_channel = [c for c in channels if c.ChannelYouTubeId == 'UCodkNmk9oWRTIYZdr_HuSlg'].pop()
+    etho_channel = [c for c in channels if c.ChannelYouTubeId == 'UCFKDEp9si4RmHFWJW1vYsMA'].pop()
     
+    third_life = [s for s in db_api.getSeasons() if s.SeasonTitle == '3rd Life' and s.SeriesTitle == 'Life Series'].pop()
+    scar_season_appearance = [s for s in db_api.getSeasonAppearances() if s.ChannelId == scar_channel.ChannelId and s.SeasonId == third_life.SeasonId].pop()
+    etho_season_appearance = [s for s in db_api.getSeasonAppearances() if s.ChannelId == etho_channel.ChannelId and s.SeasonId == third_life.SeasonId].pop()
     
+    scar_videos = [v for v in db_api.getVideos() if v.SeasonAppearanceId == scar_season_appearance.SeasonAppearanceId]
+    etho_videos = [v for v in db_api.getVideos() if v.SeasonAppearanceId == etho_season_appearance.SeasonAppearanceId]
+    
+    assert len(scar_videos) == 8
+    assert len(etho_videos) == 7

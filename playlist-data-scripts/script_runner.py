@@ -25,8 +25,9 @@ def filterCurrentSeasons(df):
 def filterDev(df):
     filtered_seasons = ['Season 9', '3rd Life']
     new_df = df[df['season_title'].isin(filtered_seasons)]
-    # Scar's, Bdub's, and Ethos's season 9 videos and Scar's Third Life playlist
-    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab', 'PLSCZsQa9VSCf4dGJL_0U1wt2UaPhUbTqB']
+    # Scar's, Bdub's, and Ethos's season 9 videos and Scar's and Etho's Third Life videos
+    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab', 
+                     'PLSCZsQa9VSCf4dGJL_0U1wt2UaPhUbTqB', '@EthosLab']
     new_df = new_df[new_df['youtube_internal_link'].isin(allowed_links)]
     return new_df
 
