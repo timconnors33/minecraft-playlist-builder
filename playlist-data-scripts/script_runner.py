@@ -31,6 +31,12 @@ def filterDev(df):
     new_df = new_df[new_df['youtube_internal_link'].isin(allowed_links)]
     return new_df
 
+# I believe these seasons generally contain only one video from each creator anyway, so it's not necessary to include them.
+def filterSpecials(df):
+    excluded_seasons = ['Real Life', 'Simple Life']
+    new_df = df.drop(df[df['season_title'].isin(excluded_seasons)].index)
+    return new_df
+
 def runDev():
     if os.environ.get('ENVIRONMENT') == 'development': 
         df = wiki_parser.wiki_parser.parse()
@@ -57,8 +63,14 @@ def runAllSeasons():
     print('Fetching data for all seasons')
     df = wiki_parser.wiki_parser.parse()
     writeToCsv(df=df, filepath='./data/raw-wiki-data.csv')
+    print('Filtering wiki data')
+    df = filterSpecials(df=df)
+    writeToCsv(df=df, filepath='./data/filtered-wiki-data.csv')
+    print('Getting YouTube video metadata')
     youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
     writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
+    print('Uploading data to database')
     loader.uploadData(video_metadata_df=youtube_metadata_df)
 
 #cProfile.run('runDev()')
+runAllSeasons()

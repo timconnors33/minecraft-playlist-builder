@@ -34,34 +34,37 @@ def processWikiData(df):
     return aggregated_df
 
 def getSeasonAppearancePlaylist(series_title, season_title, channel_link):
-    if channel_link.startswith('@'):
-        request = youtube.channels().list(
-            part='snippet',
-            forHandle=channel_link,
-            maxResults=1,
-        )
+    try:
+        if channel_link.startswith('@'):
+            request = youtube.channels().list(
+                part='snippet',
+                forHandle=channel_link,
+                maxResults=1,
+            )
+            
+        else:
+            request = youtube.channels().list(
+                part='snippet',
+                forUsername=channel_link,
+                maxResults=1,
+            )
+
+        response = request.execute()
+        channel_name = response.get('items')[0]['snippet']['title']
         
-    else:
-        request = youtube.channels().list(
+        queryString = channel_name + ' ' + series_title + ' ' + season_title
+        request = youtube.search().list(
             part='snippet',
-            forUsername=channel_link,
             maxResults=1,
+            q=queryString,
+            type='playlist'
         )
+        response = request.execute()
 
-    response = request.execute()
-    channel_name = response.get('items')[0]['snippet']['title']
-    
-    queryString = channel_name + ' ' + series_title + ' ' + season_title
-    request = youtube.search().list(
-        part='snippet',
-        maxResults=1,
-        q=queryString,
-        type='playlist'
-    )
-    response = request.execute()
-
-    playlist_id = response.get('items')[0]['id']['playlistId']
-    return playlist_id
+        playlist_id = response.get('items')[0]['id']['playlistId']
+        return playlist_id
+    except:
+        print(f'Error searching for the playlist for {series_title} {season_title} for the channel {channel_link}')
 
 def processPlaylistVideos(playlist_id):
     video_metadata_list = []
