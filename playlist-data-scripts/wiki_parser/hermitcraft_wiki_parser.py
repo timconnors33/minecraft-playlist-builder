@@ -1,52 +1,11 @@
-import requests
-from bs4 import BeautifulSoup
-import os
-import json
 import re
 import pandas as pd
-from urllib.parse import urlparse
-
+from . import parser_utils
 
 PAST_VANILLA_SEASONS_SPAN_ID = "Past_Vanilla_Seasons"
 CUR_VANILLA_SEASONS_SPAN_ID = "Current_Vanilla_Seasons"
 HERMITS_HEADER_SPAN_ID = "Hermits"
 SERIES_TITLE = "Hermitcraft"
-
-
-class SeasonLink():
-    def __init__(self, internal_link, text, is_current_season):
-        self.internal_link = internal_link
-        self.text = text
-        self.is_current_season = is_current_season
-
-
-class SeasonAppearanceLink():
-    def __init__(self, youtube_internal_link, link_type):
-        self.youtube_internal_link = youtube_internal_link
-        self.link_type = link_type
-
-class SeasonAppearanceLinkAggregate():
-    def __init__(self, series_title, season_title, is_current_season, youtube_internal_link, link_type):
-        self.series_title = series_title
-        self.season_title = season_title
-        self.is_current_season = is_current_season
-        self.youtube_internal_link = youtube_internal_link
-        self.link_type = link_type
-
-
-def getSoup(filepath, uri):
-    if not os.path.exists(filepath):
-        r = requests.get(uri)
-        htmlData = r.json()['parse']['text']['*']
-        with open(filepath, 'w') as f:
-            json.dump(htmlData, f)
-    else:
-        with open(filepath, 'r') as f:
-            htmlData = json.load(f)
-    soup = BeautifulSoup(htmlData, 'html.parser')
-
-    return soup
-
 
 def parseWikiPages():
     season_appearance_links = []
@@ -62,7 +21,7 @@ def parseWikiPages():
             season_number = int(re.compile(r'.*(?:\D|^)(\d+)').findall(season_link.text)[0])
             if cur_season_appearance_link.link_type == 'playlist' or season_number >= 6:
                 # TODO: Clean season text data if necessary
-                cur_season_appearance_link_agg = SeasonAppearanceLinkAggregate(
+                cur_season_appearance_link_agg = parser_utils.SeasonAppearanceLinkAggregate(
                     series_title=SERIES_TITLE,
                     season_title=season_link.text,
                     is_current_season=season_link.is_current_season,
@@ -81,23 +40,10 @@ def parseSeasonTableBodies(table_bodies):
         for anchor in anchors:
             # TODO: Assume that all anchors have an href or no?
             if anchor.has_attr('href'):
-                parsed = urlparse(anchor['href'])
-                if (parsed.scheme == 'http' or parsed.scheme == 'https') and (parsed.netloc == 'www.youtube.com' or parsed.netloc == 'youtube.com'):
-                    if parsed.path == '/playlist' or 'list=PL' in parsed.query:
-                        link_type = 'playlist'
-                        youtube_internal_link = getPlaylistId(youtube_internal_link=parsed.query)
-                    else:
-                        link_type = 'channel'
-                        youtube_internal_link = parsed.path
-                        # Could maybe reformat this to not use any if statements and just get the string at parsed.path.count('/'),
-                        # however I think this relationship is coincidential rather than intrinsic.
-                        if parsed.path.count('/') == 1:
-                            youtube_internal_link = parsed.path.split('/')[1]
-                        if parsed.path.count('/') >= 2:
-                            youtube_internal_link = parsed.path.split('/')[2]
-                    season_appearance = SeasonAppearanceLink(youtube_internal_link=youtube_internal_link, link_type=link_type)
+                season_appearance = parser_utils.parseYouTubeUri(uri=anchor['href'])
+                if season_appearance:
                     season_appearances.append(season_appearance)
-
+                    
     return season_appearances
 
 
@@ -117,7 +63,7 @@ def getHermitTableBodies(soup, season_link):
 
 def parseSeasonPage(season_page_internal_link):
     filepath = './data/hermitcraft/wiki-pages/' + season_page_internal_link + '.json'
-    soup = getSoup(filepath=filepath, uri=f"https://hermitcraft.fandom.com/api.php?action=parse&page={season_page_internal_link}&format=json")
+    soup = parser_utils.getSoup(filepath=filepath, uri=f"https://hermitcraft.fandom.com/api.php?action=parse&page={season_page_internal_link}&format=json")
 
     table_bodies = getHermitTableBodies(soup=soup, season_link=season_page_internal_link)
     season_appearances = parseSeasonTableBodies(table_bodies=table_bodies)
@@ -134,7 +80,7 @@ def parseSeriesTable(soup, series_table_id):
             is_current_season = False
             if series_table_id == CUR_VANILLA_SEASONS_SPAN_ID:
                 is_current_season = True
-            season_link = SeasonLink(internal_link=anchor['href'].replace('/wiki/', ''), text=anchor.get_text(), is_current_season=is_current_season)
+            season_link = parser_utils.SeasonLink(internal_link=anchor['href'].replace('/wiki/', ''), text=anchor.get_text(), is_current_season=is_current_season)
             list_of_links.append(season_link)
 
     return list_of_links
@@ -148,7 +94,7 @@ def parseSeriesPage():
     the script at a regular time interval. This is mostly only included for development purposes.
     """
 
-    soup = getSoup(filepath='./data/hermitcraft/wiki-pages/series-wiki-page.json', uri="https://hermitcraft.fandom.com/api.php?action=parse&page=Series&format=json")
+    soup = parser_utils.getSoup(filepath='./data/hermitcraft/wiki-pages/series-wiki-page.json', uri="https://hermitcraft.fandom.com/api.php?action=parse&page=Series&format=json")
     season_links = []
     past_season_links = parseSeriesTable(soup=soup, series_table_id=PAST_VANILLA_SEASONS_SPAN_ID)
     cur_season_links = parseSeriesTable(soup=soup, series_table_id=CUR_VANILLA_SEASONS_SPAN_ID)
@@ -169,9 +115,3 @@ def parseSeriesPage():
             season_links.append(cur_season_link)
 
     return season_links
-
-def getPlaylistId(youtube_internal_link):
-    # TODO: This looks silly, but I want to make sure not to extract another
-    # ID type. Will a 'list=' substring only ever be followed by a playlist ID?
-    processed_link = 'PL' + (youtube_internal_link.split('list=PL', 1)[1]).split('&', 1)[0]
-    return processed_link
