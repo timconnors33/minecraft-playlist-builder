@@ -11,6 +11,14 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
         {
             _context = context;
         }
+
+        public async Task<Season> GetSeasonBySeasonSeriesTitlesAsync(string seriesTitle, string seasonTitle)
+        {
+            var seriesSeasons = await GetSeasonsBySeriesTitleAsync(seriesTitle);
+            var matchingSeason = seriesSeasons.FirstOrDefault(season => season.SeasonTitle == seasonTitle);
+            return matchingSeason;
+        }
+
         public async Task<ICollection<Season>> GetSeasonsBySeriesTitleAsync(string seriesTitle)
         {
             // TODO: Check whether more rigorous string comparison method is needed
