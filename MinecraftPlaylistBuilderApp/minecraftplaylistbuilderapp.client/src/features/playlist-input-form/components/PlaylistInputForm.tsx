@@ -31,7 +31,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
 
-    const {error, execute } = useFetchWithMsal({scopes: protectedResources.playlistApi.scopes.write});
+    const { error, execute } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.write });
 
     let navigate = useNavigate();
 
@@ -47,10 +47,6 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             console.log(err);
         }
     };
-
-    const handlePlaylistTitleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setPlaylistTitle(event.target.value);
-    }
 
     const handleSeriesChange = (event: SelectChangeEvent) => {
         const selectedTitle = event.target.value as string;
@@ -113,103 +109,101 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         return videos;
     }
 
-    const createPlaylist = async (payload: CreatePlaylistPayload) => {
+    const createPlaylist = async (payload: CreatePlaylistPayload) : Promise<Playlist | null> => {
         console.log(JSON.stringify(payload));
-        console.log(`MSAL error: ${error}`);
 
-        execute('POST', protectedResources.playlistApi.endpoint, payload).then((response) =>{
-            if (response) {
-                console.log(response);
-                console.log('Got playlists');
-            } else {
-                console.log(error);
-                console.log("Error creating playlist");
-            }
-        })
-        //const createdPlaylist: Playlist = await response.json();
-        //return createdPlaylist;
-    }
-
-    const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const channelName = event.target.name;
-        let newSelectedChannels: Channel[] = selectedChannels;
-        const channel = channels.find((selectedChannel: Channel) => selectedChannel.channelName === channelName)
-        if (!channel) {
-            throw new Error('The channel associated with the checkbox could not be found.')
-        }
-        if (selectedChannels.includes(channel)) {
-            const channelIndex = selectedChannels.indexOf(channel)
-            newSelectedChannels.splice(channelIndex, 1);
+        const response = await execute('POST', protectedResources.playlistApi.endpoint, payload)
+        if (response) {
+            console.log(response);
+            console.log('Created playlist');
+            /* const createdPlaylist: Playlist = await response.json();
+            return createdPlaylist; */
         } else {
-            newSelectedChannels.push(channel)
+            console.log(error);
+            console.log("Error creating playlist");
         }
-        setSelectedChannels(newSelectedChannels);
+        return null;
     }
 
-    useEffect(() => {
-        const fetchChannels = () => {
-            try {
-                if (selectedSeason) {
-                    console.log(selectedSeason)
-                    const channelsData = selectedSeason?.channels;
-                    if (!channelsData) {
-                        throw new Error('Could not find channel data');
-                    }
-                    channelsData.sort((a: Channel, b: Channel) => a.channelName.localeCompare(b.channelName, undefined, { numeric: true, sensitivity: 'base' }));
-                    setChannels(channelsData);
+const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const channelName = event.target.name;
+    let newSelectedChannels: Channel[] = selectedChannels;
+    const channel = channels.find((selectedChannel: Channel) => selectedChannel.channelName === channelName)
+    if (!channel) {
+        throw new Error('The channel associated with the checkbox could not be found.')
+    }
+    if (selectedChannels.includes(channel)) {
+        const channelIndex = selectedChannels.indexOf(channel)
+        newSelectedChannels.splice(channelIndex, 1);
+    } else {
+        newSelectedChannels.push(channel)
+    }
+    setSelectedChannels(newSelectedChannels);
+}
+
+useEffect(() => {
+    const fetchChannels = () => {
+        try {
+            if (selectedSeason) {
+                console.log(selectedSeason)
+                const channelsData = selectedSeason?.channels;
+                if (!channelsData) {
+                    throw new Error('Could not find channel data');
                 }
-            } catch (err) {
-                console.log(err);
+                channelsData.sort((a: Channel, b: Channel) => a.channelName.localeCompare(b.channelName, undefined, { numeric: true, sensitivity: 'base' }));
+                setChannels(channelsData);
             }
-        };
-        fetchChannels();
-    }, [selectedSeason])
+        } catch (err) {
+            console.log(err);
+        }
+    };
+    fetchChannels();
+}, [selectedSeason])
 
-    // TODO: Implement flow for unauthenticated users
-    return (
-        <>
-            <AuthenticatedTemplate>
-                <form>
-                    <TextField
-                        required
-                        id='outline-required'
-                        label='Playlist Title'
-                        value={playlistTitle}
-
+// TODO: Implement flow for unauthenticated users
+return (
+    <>
+        <AuthenticatedTemplate>
+            <form>
+                <TextField
+                    required
+                    id='outline-required'
+                    label='Playlist Title'
+                    value={playlistTitle}
+                />
+                <div id='select-container'>
+                    <SeriesSelect
+                        seriesList={seriesList}
+                        selectedSeries={selectedSeries}
+                        onSeriesChange={handleSeriesChange}
                     />
-                    <div id='select-container'>
-                        <SeriesSelect
-                            seriesList={seriesList}
-                            selectedSeries={selectedSeries}
-                            onSeriesChange={handleSeriesChange}
-                        />
-                        <SeasonSelect
-                            seasons={seasons}
-                            selectedSeason={selectedSeason}
-                            onSeasonChange={handleSeasonChange}
-                        />
+                    <SeasonSelect
+                        seasons={seasons}
+                        selectedSeason={selectedSeason}
+                        onSeasonChange={handleSeasonChange}
+                    />
+                </div>
+                {channels && (
+                    <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh' }}>
+                        <FormHelperText>Channels</FormHelperText>
+                        <FormGroup id='channel-checkboxes' >
+                            {channels.map((channel) => (
+                                <ChannelCheckbox
+                                    channel={channel}
+                                    onChange={handleChannelCheckboxChange}
+                                    key={channel.channelName}
+                                />
+                            ))}
+                        </FormGroup>
                     </div>
-                    {channels && (
-                        <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh' }}>
-                            <FormHelperText>Channels</FormHelperText>
-                            <FormGroup id='channel-checkboxes' >
-                                {channels.map((channel) => (
-                                    <ChannelCheckbox
-                                        channel={channel}
-                                        onChange={handleChannelCheckboxChange}
-                                        key={channel.channelName}
-                                    />
-                                ))}
-                            </FormGroup>
-                        </div>
-                    )}
-                    <Button type="submit" onClick={handleSubmit}>
-                        Submit
-                    </Button>
-                </form>
-            </AuthenticatedTemplate>
-        </>
-    );
+                )}
+                <Button type="submit" onClick={handleSubmit}>
+                    Submit
+                </Button>
+            </form>
+        </AuthenticatedTemplate>
+    </>
+);
 }
 
 export default PlaylistInputForm;

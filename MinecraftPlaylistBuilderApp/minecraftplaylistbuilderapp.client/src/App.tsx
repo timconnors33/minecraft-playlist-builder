@@ -6,7 +6,7 @@ import PlaylistInputForm from './features/playlist-input-form/components/Playlis
 import Header from './components/Header';
 import { SeasonAppearance } from './types/api';
 import { Outlet, Route, Routes } from 'react-router';
-import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
+import PlaylistVideoDisplay from './features/playlist-video-display/PlaylistVideoDisplay';
 import { MsalProvider } from '@azure/msal-react';
 
 const darkTheme = createTheme({
@@ -55,7 +55,7 @@ const App = ({instance}) => {
                 <Routes>
                     <Route path="/" element={<Layout />}>
                         <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />} />
-                        <Route path="playlist" element={<PlaylistDisplay />} />
+                        <Route path="playlist" element={<PlaylistVideoDisplay />} />
                         <Route path="auth-response" element={<div>Authenticated!</div>} />
                     </Route>
                 </Routes>

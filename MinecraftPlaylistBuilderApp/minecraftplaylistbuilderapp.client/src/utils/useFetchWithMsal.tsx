@@ -74,7 +74,6 @@ const useFetchWithMsal = (msalRequest) => {
                 setIsLoading(false);
                 return response;
             } catch (e) {
-                console.log("Touch purple");
                 setError(e);
                 setIsLoading(false);
                 throw e;
