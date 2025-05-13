@@ -1,11 +1,14 @@
-import { Button, FormGroup, FormHelperText, SelectChangeEvent } from "@mui/material";
+import { Button, FormGroup, FormHelperText, SelectChangeEvent, TextField } from "@mui/material";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload } from "../../../types/api";
+import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload, CreatePlaylistPayload, Playlist } from "../../../types/api";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
 import ChannelCheckbox from "./ChannelCheckbox";
 import { useNavigate } from "react-router"
+import { AuthenticatedTemplate } from "@azure/msal-react";
+import { protectedResources } from "../../../utils/authConfig";
+import useFetchWithMsal from "../../../utils/useFetchWithMsal";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 const BASE_URL = 'https://localhost:7258';
@@ -15,6 +18,8 @@ interface Props {
 }
 
 const PlaylistInputForm = ({ seasonAppearance }: Props) => {
+    const [playlistTitle, setPlaylistTitle] = useState<string>('Minecraft Playlist');
+
     const [seriesList, setSeriesList] = useState<Series[]>(seasonAppearance.series);
     // TODO: Check using undefined here
     const [selectedSeries, setSelectedSeries] = useState<Series>(seriesList[0]);
@@ -25,6 +30,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
+
+    const {error, execute } = useFetchWithMsal({scopes: protectedResources.playlistApi.scopes.write});
 
     let navigate = useNavigate();
 
@@ -40,6 +47,10 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             console.log(err);
         }
     };
+
+    const handlePlaylistTitleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setPlaylistTitle(event.target.value);
+    }
 
     const handleSeriesChange = (event: SelectChangeEvent) => {
         const selectedTitle = event.target.value as string;
@@ -68,14 +79,21 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        const payload: GetVideosPayload = {
+        const playlistPayload: CreatePlaylistPayload = {
+            playlistTitle: playlistTitle,
+            seriesTitle: selectedSeries.seriesTitle,
+            seasonTitle: selectedSeason.seasonTitle
+        }
+        await createPlaylist(playlistPayload);
+
+        const videosPayload: GetVideosPayload = {
             seriesTitle: selectedSeries.seriesTitle,
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        const videos: Video[] = await fetchVideos(payload);
+        const videos: Video[] = await fetchVideos(videosPayload);
         //await handleAuth(videos);
-        navigate("/playlist", {state: {videos}});
+        navigate("/playlist", { state: { videos } });
     }
 
     const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
@@ -93,6 +111,23 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         const videos: Video[] = await response.json();
         console.log('Fetched videos');
         return videos;
+    }
+
+    const createPlaylist = async (payload: CreatePlaylistPayload) => {
+        console.log(JSON.stringify(payload));
+        console.log(`MSAL error: ${error}`);
+
+        execute('POST', protectedResources.playlistApi.endpoint, payload).then((response) =>{
+            if (response) {
+                console.log(response);
+                console.log('Got playlists');
+            } else {
+                console.log(error);
+                console.log("Error creating playlist");
+            }
+        })
+        //const createdPlaylist: Playlist = await response.json();
+        //return createdPlaylist;
     }
 
     const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -130,39 +165,49 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         fetchChannels();
     }, [selectedSeason])
 
+    // TODO: Implement flow for unauthenticated users
     return (
         <>
-            <form>
-                <div id='select-container'>
-                    <SeriesSelect
-                        seriesList={seriesList}
-                        selectedSeries={selectedSeries}
-                        onSeriesChange={handleSeriesChange}
+            <AuthenticatedTemplate>
+                <form>
+                    <TextField
+                        required
+                        id='outline-required'
+                        label='Playlist Title'
+                        value={playlistTitle}
+
                     />
-                    <SeasonSelect
-                        seasons={seasons}
-                        selectedSeason={selectedSeason}
-                        onSeasonChange={handleSeasonChange}
-                    />
-                </div>
-                {channels && (
-                    <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh'}}>
-                        <FormHelperText>Channels</FormHelperText>
-                        <FormGroup id='channel-checkboxes' >
-                            {channels.map((channel) => (
-                                <ChannelCheckbox
-                                    channel={channel}
-                                    onChange={handleChannelCheckboxChange}
-                                    key={channel.channelName}
-                                />
-                            ))}
-                        </FormGroup>
+                    <div id='select-container'>
+                        <SeriesSelect
+                            seriesList={seriesList}
+                            selectedSeries={selectedSeries}
+                            onSeriesChange={handleSeriesChange}
+                        />
+                        <SeasonSelect
+                            seasons={seasons}
+                            selectedSeason={selectedSeason}
+                            onSeasonChange={handleSeasonChange}
+                        />
                     </div>
-                )}
-                <Button type="submit" onClick={handleSubmit}>
-                    Submit
-                </Button>
-            </form>
+                    {channels && (
+                        <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh' }}>
+                            <FormHelperText>Channels</FormHelperText>
+                            <FormGroup id='channel-checkboxes' >
+                                {channels.map((channel) => (
+                                    <ChannelCheckbox
+                                        channel={channel}
+                                        onChange={handleChannelCheckboxChange}
+                                        key={channel.channelName}
+                                    />
+                                ))}
+                            </FormGroup>
+                        </div>
+                    )}
+                    <Button type="submit" onClick={handleSubmit}>
+                        Submit
+                    </Button>
+                </form>
+            </AuthenticatedTemplate>
         </>
     );
 }
