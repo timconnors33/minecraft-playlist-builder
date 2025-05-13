@@ -1,3 +1,5 @@
+import { UUID } from "crypto";
+
 export interface Series {
     seriesTitle: string;
     seasons: Season[];
@@ -29,4 +31,17 @@ export interface Video {
     videoTitle : string;
     videoThumbnailUri : string;
     channelName : string;
+}
+
+export interface CreatePlaylistPayload {
+    playlistTitle: string;
+    seriesTitle: string;
+    seasonTitle: string;
+}
+
+export interface Playlist {
+    playlistId: UUID;
+    playlistTitle: string;
+    seriesTitle: string;
+    seasonTitle: string;
 }

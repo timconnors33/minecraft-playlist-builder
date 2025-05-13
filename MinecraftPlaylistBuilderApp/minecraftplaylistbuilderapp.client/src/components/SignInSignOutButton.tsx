@@ -29,7 +29,7 @@ const SignInSignOutButton = () => {
         instance.loginRedirect({
             account: instance.getActiveAccount(),
         });
-    }
+    };
 
     const handleLogoutPopup = () => {
         instance.logoutPopup({

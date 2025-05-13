@@ -38,7 +38,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
             {
                 return null;
             }
-            playlist.SeasonId = playlistSeason.SeasonId;
+            playlist.Season = playlistSeason;
 
             var createdPlaylist = await _playlistRepository.CreatePlaylistAsync(playlist);
             if (createdPlaylist == null)
@@ -46,7 +46,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
                 return null;
             }
 
-            return new PlaylistDto(createdPlaylist.PublicPlaylistId, createdPlaylist.PlaylistTitle);
+            return new PlaylistDto(createdPlaylist.PublicPlaylistId, createdPlaylist.PlaylistTitle, createdPlaylist.Season.Series.SeriesTitle, createdPlaylist.Season.SeasonTitle);
         }
 
         public async Task<bool> DeletePlaylistAsync(Guid userId, Guid playlistId)
@@ -68,7 +68,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
             var playlists = await _playlistRepository.GetAllByOwnerAsync(userId);
             foreach (var playlist in playlists)
             {
-                var playlistDto = new PlaylistDto(playlist.PublicPlaylistId, playlist.PlaylistTitle);
+                var playlistDto = new PlaylistDto(playlist.PublicPlaylistId, playlist.PlaylistTitle, playlist.Season.Series.SeriesTitle, playlist.Season.SeasonTitle);
                 playlistDtos.Add(playlistDto);
             }
             return playlistDtos;
@@ -83,7 +83,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
                 return null;
             }
 
-            var playlistDto = new PlaylistDto(playlist.PublicPlaylistId, playlist.PlaylistTitle);
+            var playlistDto = new PlaylistDto(playlist.PublicPlaylistId, playlist.PlaylistTitle, playlist.Season.Series.SeriesTitle, playlist.Season.SeasonTitle);
             return playlistDto;
         }
 
@@ -103,7 +103,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
 
             // TODO: Safe to return direct data from database entity? Check for any potential vulnerabilities
             var updatedPlaylist = await _playlistRepository.UpdatePlaylistAsync(playlistId, playlistToUpdate);
-            var updatedPlaylistDto = new PlaylistDto(updatedPlaylist.PublicPlaylistId, updatedPlaylist.PlaylistTitle);
+            var updatedPlaylistDto = new PlaylistDto(updatedPlaylist.PublicPlaylistId, updatedPlaylist.PlaylistTitle, updatedPlaylist.Season.Series.SeriesTitle, updatedPlaylist.Season.SeasonTitle);
 
             return updatedPlaylistDto;
         }

@@ -60,7 +60,7 @@ export const msalConfig = {
  */
 export const protectedResources = {
     playlistApi: {
-        endpoint: 'https://localhost:44351/api/playlists',
+        endpoint: 'https://localhost:7258/api/playlists',
         scopes: {
             read: ['api://922e867f-85d5-4f76-b6fd-eb78206a06f3/Playlists.Read'],
             write: ['api://922e867f-85d5-4f76-b6fd-eb78206a06f3/Playlists.ReadWrite'],

@@ -12,7 +12,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Models
         public Guid OwnerId { get; set; }
         [Required]
         public string PlaylistTitle { get; set; }
-        [Required]
-        public int SeasonId { get; set; }
+        // TODO: Should this be required?
+        public virtual Season Season { get; set; }
     }
 }

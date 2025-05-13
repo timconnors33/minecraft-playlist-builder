@@ -6,5 +6,4 @@ CREATE TABLE [Playlists]
     OwnerId UNIQUEIDENTIFIER NOT NULL,
     PlaylistTitle NVARCHAR(64) NOT NULL,
     CONSTRAINT FK_PlaylistSeasonId FOREIGN KEY (SeasonId) REFERENCES dbo.[Seasons](SeasonId),
-    CONSTRAINT AK_UserPlaylistTitle UNIQUE (OwnerId, PlaylistTitle)
 );

@@ -19,7 +19,9 @@
     public record PlaylistDto
         (
         Guid PublicPlaylistId,
-        string PlaylistTitle
+        string PlaylistTitle,
+        string SeriesTitle,
+        string SeasonTitle
         )
     {
     }

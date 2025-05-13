@@ -5,7 +5,7 @@ import {
     useCallback,
 } from 'react';
 
-import { InteractionType, PopupRequest } from '@azure/msal-browser';
+import { InteractionType } from '@azure/msal-browser';
 import { useMsal, useMsalAuthentication } from "@azure/msal-react";
 
 /**
@@ -13,7 +13,7 @@ import { useMsal, useMsalAuthentication } from "@azure/msal-react";
  * @param {PopupRequest} msalRequest 
  * @returns 
  */
-const useFetchWithMsal = (msalRequest: PopupRequest) => {
+const useFetchWithMsal = (msalRequest) => {
     const { instance } = useMsal();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ const useFetchWithMsal = (msalRequest: PopupRequest) => {
     const { result, error: msalError } = useMsalAuthentication(InteractionType.Popup, {
         ...msalRequest,
         account: instance.getActiveAccount(),
-        redirectUri: '/redirect'
+        redirectUri: 'https://localhost:51252/auth-response'
     });
 
     /**
@@ -32,7 +32,7 @@ const useFetchWithMsal = (msalRequest: PopupRequest) => {
      * @param {Object} data: The data to send to the endpoint, if any 
      * @returns JSON response
      */
-    const execute = async (method: string, endpoint: String, data = null) => {
+    const execute = async (method, endpoint, data) => {
         if (msalError) {
             setError(msalError);
             return;
@@ -74,6 +74,7 @@ const useFetchWithMsal = (msalRequest: PopupRequest) => {
                 setIsLoading(false);
                 return response;
             } catch (e) {
+                console.log("Touch purple");
                 setError(e);
                 setIsLoading(false);
                 throw e;
