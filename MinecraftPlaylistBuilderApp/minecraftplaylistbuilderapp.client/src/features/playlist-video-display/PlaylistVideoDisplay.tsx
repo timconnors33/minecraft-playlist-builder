@@ -1,7 +1,7 @@
 import { useLocation } from "react-router";
 import { Video } from "../../types/api";
 import VideoCard from "./VideoCard";
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import PaginatedList from "../../components/PaginatedList";
 
 function PlaylistVideoDisplay() {

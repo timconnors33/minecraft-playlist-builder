@@ -39,7 +39,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
 
         public async Task<List<Playlist>> GetAllByOwnerAsync(Guid ownerId)
         {
-            var playlists = await _context.Playlists.Where(playlist => playlist.PublicPlaylistId == ownerId).ToListAsync();
+            var playlists = await _context.Playlists.Where(playlist => playlist.OwnerId == ownerId).ToListAsync();
             return playlists;
         }
 

@@ -89,7 +89,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
         const videos: Video[] = await fetchVideos(videosPayload);
         //await handleAuth(videos);
-        navigate("/playlist", { state: { videos } });
+        navigate("/playlists");
     }
 
     const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
@@ -114,13 +114,13 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
         const response = await execute('POST', protectedResources.playlistApi.endpoint, payload)
         if (response) {
-            console.log(response);
             console.log('Created playlist');
+            console.log(response);
             /* const createdPlaylist: Playlist = await response.json();
             return createdPlaylist; */
         } else {
-            console.log(error);
             console.log("Error creating playlist");
+            console.log(error);
         }
         return null;
     }

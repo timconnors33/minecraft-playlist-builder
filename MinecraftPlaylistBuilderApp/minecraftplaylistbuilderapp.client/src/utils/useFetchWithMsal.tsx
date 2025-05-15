@@ -32,7 +32,7 @@ const useFetchWithMsal = (msalRequest) => {
      * @param {Object} data: The data to send to the endpoint, if any 
      * @returns JSON response
      */
-    const execute = async (method, endpoint, data) => {
+    const execute = async (method: string, endpoint: string, data: object | null = null) => {
         if (msalError) {
             setError(msalError);
             return;
@@ -86,6 +86,7 @@ const useFetchWithMsal = (msalRequest) => {
         error,
         data,
         execute: useCallback(execute, [result, msalError]), // to avoid infinite calls when inside a `useEffect`
+        result,
     };
 };
 
