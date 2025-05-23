@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.4",
     "@mui/material": "^6.4.4",
+    "@tanstack/react-query": "^5.76.1",
     "@types/gapi": "^0.0.47",
     "@types/google.accounts": "^0.0.15",
     "dompurify": "^3.2.4",

@@ -9,6 +9,7 @@ import { Outlet, Route, Routes } from 'react-router';
 import PlaylistVideoDisplay from './features/playlist-video-display/PlaylistVideoDisplay';
 import { MsalProvider } from '@azure/msal-react';
 import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 
 const darkTheme = createTheme({
     palette: {
@@ -29,7 +30,9 @@ function Layout() {
     );
 }
 
-const App = ({instance}) => {
+const queryClient = new QueryClient();
+
+const App = ({ instance }) => {
 
     const [seasonAppearance, setSeasonAppearance] = useState<SeasonAppearance>();
 
@@ -51,17 +54,19 @@ const App = ({instance}) => {
 
     return (
         <MsalProvider instance={instance}>
-            <ThemeProvider theme={darkTheme}>
-                <CssBaseline />
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />} />
-                        <Route path="playlist" element={<PlaylistVideoDisplay />} />
-                        <Route path="auth-response" element={<div>Authenticated!</div>} />
-                        <Route path="playlists" element={<PlaylistDisplay />} />
-                    </Route>
-                </Routes>
-            </ThemeProvider>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={darkTheme}>
+                    <CssBaseline />
+                    <Routes>
+                        <Route path="/" element={<Layout />}>
+                            <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />} />
+                            <Route path="playlist" element={<PlaylistVideoDisplay />} />
+                            <Route path="auth-response" element={<div>Authenticated!</div>} />
+                            <Route path="playlists" element={<PlaylistDisplay />} />
+                        </Route>
+                    </Routes>
+                </ThemeProvider>
+            </QueryClientProvider>
         </MsalProvider>
     )
 }
