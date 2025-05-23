@@ -17,14 +17,19 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
 
         // These two methods are currently the same, but should there be the capability
         // to share playlists in the future, they might be different.
-        private bool isAuthorizedToRead(Guid userId, Guid playlistId)
+        private async Task<bool> isAuthorizedToRead(Guid userId, Guid playlistId)
         {
-            return (userId == playlistId);
+            return (userId == await GetPlaylistOwnerAsync(playlistId));
         }
 
-        private bool isAuthorizedToWrite(Guid userId, Guid playlistId)
+        private async Task<bool> isAuthorizedToWrite(Guid userId, Guid playlistId)
         {
-            return (userId == playlistId);
+            return (userId == await GetPlaylistOwnerAsync(playlistId));
+        }
+
+        private async Task<Guid> GetPlaylistOwnerAsync(Guid playlistId)
+        {
+            return await _playlistRepository.GetPlaylistOwnerAsync(playlistId);
         }
 
         public async Task<PlaylistDto> CreatePlaylistAsync(CreatePlaylistDto CreatePlaylistDto, Guid userId)
@@ -53,7 +58,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
         {
             // TODO: Differentiate between not having read privileges and playlist not existing (not found)
             // and having read privileges and no write privileges (forbidden)
-            if (!isAuthorizedToRead(userId, playlistId) || !isAuthorizedToWrite(userId, playlistId))
+            if (!await isAuthorizedToRead(userId, playlistId) || !await isAuthorizedToWrite(userId, playlistId))
             {
                 return false;
             }
@@ -78,7 +83,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
         {
             var playlist = await _playlistRepository.GetPlaylistAsync(playlistId);
 
-            if (playlist == null || !isAuthorizedToRead(userId, playlistId) || !isAuthorizedToWrite(userId, playlistId))
+            if (playlist == null || !await isAuthorizedToRead(userId, playlistId) || !await isAuthorizedToWrite(userId, playlistId))
             {
                 return null;
             }
@@ -89,7 +94,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
 
         public async Task<PlaylistDto> UpdatePlaylistAsync(UpdatePlaylistDto updatePlaylistDto, Guid userId, Guid playlistId)
         {
-            if (!isAuthorizedToRead(userId, playlistId) || !isAuthorizedToWrite(userId, playlistId))
+            if (!await isAuthorizedToRead(userId, playlistId) || !await isAuthorizedToWrite(userId, playlistId))
             {
                 return null;
             }

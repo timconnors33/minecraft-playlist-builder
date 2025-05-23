@@ -11,8 +11,6 @@ function PlaylistDisplay() {
 
     const { error, execute, result } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.read });
 
-    const queryClient = useQueryClient();
-
     const {
         data: playlists = [],
         isLoading,
@@ -30,8 +28,8 @@ function PlaylistDisplay() {
         console.log(playlists);
         return playlists.map((playlist) => (
             <PlaylistCard key={playlist.playlistId} playlist={playlist}/>
-        ))
-    }, [playlists])
+        ));
+    }, [playlists]);
 
     if (isLoading) { return <CircularProgress />; }
 

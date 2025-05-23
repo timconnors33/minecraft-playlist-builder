@@ -7,6 +7,7 @@ interface Props {
 }
 
 function VideoCard({video} : Props) {
+
     return (
         <Card sx={{display: 'flex', width: '700px'}}>
             <CardContent>

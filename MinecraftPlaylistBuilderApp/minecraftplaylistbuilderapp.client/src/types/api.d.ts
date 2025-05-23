@@ -40,7 +40,7 @@ export interface CreatePlaylistPayload {
 }
 
 export interface Playlist {
-    playlistId: UUID;
+    publicPlaylistId: UUID;
     playlistTitle: string;
     seriesTitle: string;
     seasonTitle: string;

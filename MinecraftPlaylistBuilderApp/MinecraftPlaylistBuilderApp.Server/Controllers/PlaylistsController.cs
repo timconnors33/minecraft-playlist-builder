@@ -95,7 +95,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Controllers
         )]
         public async Task<IActionResult> DeleteAsync(Guid playlistId)
         {
-            var isDeleted = await _playlistService.DeletePlaylistAsync(playlistId, GetUserId());
+            var isDeleted = await _playlistService.DeletePlaylistAsync(GetUserId(), playlistId);
             if (!isDeleted)
             {
                 return NotFound();
