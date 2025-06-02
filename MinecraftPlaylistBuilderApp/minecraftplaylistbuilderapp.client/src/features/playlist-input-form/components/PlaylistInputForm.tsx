@@ -10,9 +10,8 @@ import { AuthenticatedTemplate } from "@azure/msal-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useFetchWithMsal from "../../../utils/useFetchWithMsal";
 import { protectedResources } from "../../../utils/authConfig";
+import { BASE_API_URL } from "../../../utils/config";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
-
-const BASE_URL = 'https://localhost:7258';
 
 interface Props {
     seasonAppearance: SeasonAppearance;
@@ -107,7 +106,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
         console.log(JSON.stringify(payload));
-        const response = await fetch(`${BASE_URL}/api/videos`, {
+        const response = await fetch(`${BASE_API_URL}/api/videos`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

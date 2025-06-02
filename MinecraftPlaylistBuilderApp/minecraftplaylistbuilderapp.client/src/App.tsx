@@ -9,15 +9,14 @@ import { Outlet, Route, Routes } from 'react-router';
 import PlaylistVideoDisplay from './features/playlist-video-display/PlaylistVideoDisplay';
 import { MsalProvider } from '@azure/msal-react';
 import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BASE_API_URL } from './utils/config';
 
 const darkTheme = createTheme({
     palette: {
         mode: 'dark'
     }
 })
-
-const BASE_URL = 'https://localhost:7258';
 
 function Layout() {
     return (
@@ -38,7 +37,7 @@ const App = ({ instance }) => {
 
     useEffect(() => {
         const fetchSeasonAppearance = async () => {
-            const response = await fetch(`${BASE_URL}/api/seasonappearances`)
+            const response = await fetch(`${BASE_API_URL}/api/seasonappearances`)
             if (!response.ok) {
                 throw new Error('Failed to fetch season appearance data');
             }

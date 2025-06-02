@@ -7,9 +7,7 @@ import {
 
 import { InteractionType } from '@azure/msal-browser';
 import { useMsal, useMsalAuthentication } from "@azure/msal-react";
-
-const BASE_API_URL: string = 'https://localhost:7258';
-const BASE_CLIENT_URL: string = 'https://localhost:51252';
+import { BASE_API_URL, BASE_CLIENT_URL } from './config';
 
 /**
  * Custom hook to call a web API using bearer token obtained from MSAL
