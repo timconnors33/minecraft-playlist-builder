@@ -11,7 +11,7 @@ interface Props {
 }
 
 function DeletePlaylistDialog({ playlistId }: Props) {
-    const [openDialog, setOpenDialog] = useState(false);
+    const [openDialog, setOpenDialog] = useState<boolean>(false);
 
     const { error, execute } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.write });
     const queryClient = useQueryClient();
@@ -59,7 +59,7 @@ function DeletePlaylistDialog({ playlistId }: Props) {
                 </DialogTitle>
                 <DialogActions>
                     <Button onClick={handleDeletePlaylist}>Delete</Button>
-                    <Button onClick={handleCloseDialog}>Close</Button>
+                    <Button onClick={handleCloseDialog}>Cancel</Button>
                 </DialogActions>
             </Dialog>
         </>

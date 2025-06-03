@@ -1,6 +1,7 @@
 ﻿using MinecraftPlaylistBuilderApp.Server.Dtos;
 using MinecraftPlaylistBuilderApp.Server.Interfaces;
 using MinecraftPlaylistBuilderApp.Server.Models;
+using MinecraftPlaylistBuilderApp.Server.Validators;
 
 namespace MinecraftPlaylistBuilderApp.Server.Services
 {
@@ -105,6 +106,12 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
             }
 
             playlistToUpdate.PlaylistTitle = updatePlaylistDto.PlaylistTitle;
+
+            var playlistValidator = new PlaylistValidator();
+            if (!playlistValidator.Validate(playlistToUpdate).IsValid)
+            {
+                return null;
+            }
 
             // TODO: Safe to return direct data from database entity? Check for any potential vulnerabilities
             var updatedPlaylist = await _playlistRepository.UpdatePlaylistAsync(playlistId, playlistToUpdate);

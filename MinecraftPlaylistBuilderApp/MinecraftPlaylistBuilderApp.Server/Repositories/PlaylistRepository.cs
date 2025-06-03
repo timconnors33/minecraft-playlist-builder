@@ -67,6 +67,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
                 return null;
             }
             playlistToUpdate = newPlaylist;
+            await _context.SaveChangesAsync();
             return playlistToUpdate;
         }
     }

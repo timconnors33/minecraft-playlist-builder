@@ -1,8 +1,8 @@
 import { Button, Card, CardContent, Link, Typography } from "@mui/material";
 import { Playlist } from "../../types/api";
 import DOMPurify from "dompurify";
-import EditIcon from '@mui/icons-material/Edit';
 import DeletePlaylistDialog from "../playlist-video-display/DeletePlaylistDialog";
+import EditPlaylistDialog from "../playlist-video-display/EditPlaylistDialog";
 
 interface Props {
     playlist: Playlist;
@@ -27,9 +27,7 @@ function PlaylistCard({ playlist }: Props) {
                         </Typography>
                     </div>
                     <div style={{ display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                        <Button>
-                            <EditIcon/>
-                        </Button>
+                        <EditPlaylistDialog playlistId={playlist.publicPlaylistId} currentTitle={playlist.playlistTitle}/>
                         <DeletePlaylistDialog playlistId={playlist.publicPlaylistId}/>
                     </div>
                 </div>

@@ -178,7 +178,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         required
                         id='outline-required'
                         label='Playlist Title'
-                        value={playlistTitle}
+                        defaultValue={playlistTitle}
+                        onChange={e => setPlaylistTitle(e.target.value)}
                     />
                     <div id='select-container'>
                         <SeriesSelect
