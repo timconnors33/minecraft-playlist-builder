@@ -37,7 +37,7 @@ function PlaylistVideoDisplay() {
         console.log(playlistVideos);
         playlistVideos.sort((a: PlaylistVideo, b: PlaylistVideo) => new Date(a.videoPublishedAt).getTime() - new Date(b.videoPublishedAt).getTime());
         return playlistVideos.map((playlistVideo: PlaylistVideo) => (
-            <PlaylistVideoCard key={playlistVideo.videoYouTubeId} playlistVideo={playlistVideo} />
+            <PlaylistVideoCard key={playlistVideo.videoYouTubeId} playlistId={playlistId} playlistVideo={playlistVideo}/>
         ))
     })
 

@@ -27,18 +27,19 @@ export interface GetVideosPayload {
 }
 
 export interface Video {
-    videoYouTubeId : string;
-    videoTitle : string;
-    videoThumbnailUri : string;
-    channelName : string;
+    videoYouTubeId: string;
+    videoTitle: string;
+    videoThumbnailUri: string;
+    channelName: string;
 }
 
 export interface PlaylistVideo {
-    videoYouTubeId : string;
-    videoTitle : string;
-    channelName : string;
-    isWatched : boolean;
-    videoPublishedAt : Date;
+    publicPlaylistVideoId: UUID;
+    videoYouTubeId: string;
+    videoTitle: string;
+    channelName: string;
+    isWatched: boolean;
+    videoPublishedAt: Date;
 }
 
 export interface CreatePlaylistPayload {
