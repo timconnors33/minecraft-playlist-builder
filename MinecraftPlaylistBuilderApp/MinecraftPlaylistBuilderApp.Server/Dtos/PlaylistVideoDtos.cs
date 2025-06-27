@@ -6,7 +6,8 @@
         string VideoTitle,
         string VideoYouTubeId,
         bool IsWatched,
-        string ChannelTitle
+        string ChannelName,
+        DateTime VideoPublishedAt
     )
     {
     }

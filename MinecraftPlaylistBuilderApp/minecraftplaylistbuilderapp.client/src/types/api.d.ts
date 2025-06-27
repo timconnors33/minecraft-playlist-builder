@@ -38,6 +38,7 @@ export interface PlaylistVideo {
     videoTitle : string;
     channelName : string;
     isWatched : boolean;
+    videoPublishedAt : Date;
 }
 
 export interface CreatePlaylistPayload {

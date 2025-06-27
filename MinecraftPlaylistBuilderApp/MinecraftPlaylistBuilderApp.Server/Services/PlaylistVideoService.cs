@@ -63,7 +63,8 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
                             createdPlaylistVideo.Video.VideoTitle, 
                             createdPlaylistVideo.Video.VideoYouTubeId, 
                             playlistVideo.IsWatched,
-                            playlistVideo.Video.SeasonAppearance.Channel.ChannelName
+                            playlistVideo.Video.SeasonAppearance.Channel.ChannelName,
+                            playlistVideo.Video.VideoPublishedAt
                         )
                     );
                 }    
@@ -101,7 +102,8 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
                             playlistVideo.Video.VideoTitle,
                             playlistVideo.Video.VideoYouTubeId,
                             playlistVideo.IsWatched,
-                            playlistVideo.Video.SeasonAppearance.Channel.ChannelName
+                            playlistVideo.Video.SeasonAppearance.Channel.ChannelName,
+                            playlistVideo.Video.VideoPublishedAt
                         );
         }
 
@@ -121,7 +123,8 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
                             playlistVideo.Video.VideoTitle,
                             playlistVideo.Video.VideoYouTubeId,
                             playlistVideo.IsWatched,
-                            playlistVideo.Video.SeasonAppearance.Channel.ChannelName
+                            playlistVideo.Video.SeasonAppearance.Channel.ChannelName,
+                            playlistVideo.Video.VideoPublishedAt
                         )
                 );
             }
@@ -150,7 +153,8 @@ namespace MinecraftPlaylistBuilderApp.Server.Services
                 updatedPlaylistVideo.Video.VideoTitle, 
                 updatedPlaylistVideo.Video.VideoYouTubeId, 
                 updatedPlaylistVideo.IsWatched, 
-                updatedPlaylistVideo.Video.SeasonAppearance.Channel.ChannelName
+                updatedPlaylistVideo.Video.SeasonAppearance.Channel.ChannelName,
+                updatedPlaylistVideo.Video.VideoPublishedAt
                 );
         }
     }
