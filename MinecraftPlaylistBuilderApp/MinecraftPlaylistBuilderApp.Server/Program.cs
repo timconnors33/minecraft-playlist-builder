@@ -66,6 +66,9 @@ builder.Services.AddScoped<ISeasonAppearanceService, SeasonAppearanceService>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 
+builder.Services.AddScoped<IPlaylistVideoRepository, PlaylistVideoRepository>();
+builder.Services.AddScoped<IPlaylistVideoService, PlaylistVideoService>();
+
 builder.Services.AddControllers();
 
 // https://learn.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-9.0

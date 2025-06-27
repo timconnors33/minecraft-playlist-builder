@@ -4,8 +4,8 @@ import { Button } from '@mui/material';
 import '../Header.css'
 import SignInSignOutButton from './SignInSignOutButton';
 import { AuthenticatedTemplate } from '@azure/msal-react';
-import FeaturedPlayListIcon from '@mui/icons-material/FeaturedPlayList';
 import { BASE_CLIENT_URL } from '../utils/config';
+import AddIcon from '@mui/icons-material/Add';
 
 const Header = () => {
     return (
@@ -17,6 +17,9 @@ const Header = () => {
                         Playlists
                     </Button>
                 </AuthenticatedTemplate>
+                <Button href={`${BASE_CLIENT_URL}`}>
+                    <AddIcon />
+                </Button>
                 <Button href='https://github.com/'>
                     <GitHubIcon />
                 </Button>

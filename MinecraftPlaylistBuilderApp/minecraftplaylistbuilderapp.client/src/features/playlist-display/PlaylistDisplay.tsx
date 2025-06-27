@@ -9,7 +9,7 @@ import { CircularProgress } from "@mui/material";
 
 function PlaylistDisplay() {
 
-    const { error, execute, result } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.read });
+    const { error, execute, result } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.read] });
 
     const {
         data: playlists = [],

@@ -11,6 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useFetchWithMsal from "../../../utils/useFetchWithMsal";
 import { protectedResources } from "../../../utils/authConfig";
 import { BASE_API_URL } from "../../../utils/config";
+import { UUID } from "crypto";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 interface Props {
@@ -33,18 +34,28 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     let navigate = useNavigate();
 
-    const { error, execute } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.write });
+    const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write, protectedResources.playlistVideoApi.scopes.write]});
     const queryClient = useQueryClient();
 
     // TODO: Add payload to mutation key?
     const createPlaylistMutation = useMutation({
-            mutationKey: ['createPlaylists'],
-            mutationFn: async (payload: CreatePlaylistPayload) => { 
-                return await execute('POST', protectedResources.playlistApi.endpoint, payload);},
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['playlists']});
-            }
-        });
+        mutationKey: ['createPlaylists'],
+        mutationFn: async (payload: CreatePlaylistPayload) => {
+            return await execute('POST', protectedResources.playlistApi.endpoint, payload);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['playlists'] });
+        }
+    });
+
+    const createPlaylistVideosMutation = useMutation({
+        mutationKey: ['createPlaylistVideos'],
+        mutationFn: async (params : {playlistId : UUID, payload: string[]}) => {
+            console.log(params.playlistId);
+            console.log(params.payload);
+            return await execute('POST', `${protectedResources.playlistApi.endpoint}/${params.playlistId}/playlistVideos`, {channelNames: params.payload})
+        }
+    })
 
     const fetchSeasons = async (seriesTitle: string) => {
         try {
@@ -99,12 +110,12 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        const videos: Video[] = await fetchVideos(videosPayload);
+        //const videos: Video[] = await fetchVideos(videosPayload);
         //await handleAuth(videos);
         navigate("/playlists");
     }
 
-    const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
+    /* const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
         console.log(JSON.stringify(payload));
         const response = await fetch(`${BASE_API_URL}/api/videos`, {
             method: "POST",
@@ -119,15 +130,24 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         const videos: Video[] = await response.json();
         console.log('Fetched videos');
         return videos;
-    }
+    } */
 
     const createPlaylist = async (payload: CreatePlaylistPayload) => {
         console.log(JSON.stringify(payload));
 
         try {
             const response = await createPlaylistMutation.mutateAsync(payload);
-            console.log('Created playlist');
             console.log(response);
+            const createdPlaylist : Playlist = response
+            console.log(createdPlaylist)
+            console.log('Created playlist');
+            const playlistId : UUID = createdPlaylist.publicPlaylistId;
+            
+            const channelNames = selectedChannels.map(channel => channel.channelName)
+            const createPlaylistVideosRes = await createPlaylistVideosMutation.mutateAsync({playlistId: playlistId, payload: channelNames});
+            console.log('Created playlist items');
+            console.log(createPlaylistVideosRes);
+
         } catch (error) {
             console.log("Error creating playlist");
             console.log(error);

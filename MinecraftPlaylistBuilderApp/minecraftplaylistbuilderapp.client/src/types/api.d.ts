@@ -33,6 +33,13 @@ export interface Video {
     channelName : string;
 }
 
+export interface PlaylistVideo {
+    videoYouTubeId : string;
+    videoTitle : string;
+    channelName : string;
+    isWatched : boolean;
+}
+
 export interface CreatePlaylistPayload {
     playlistTitle: string;
     seriesTitle: string;

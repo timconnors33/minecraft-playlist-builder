@@ -1,6 +1,7 @@
 CREATE TABLE [PlaylistVideos]
 (
     PlaylistVideoId INTEGER IDENTITY PRIMARY KEY,
+    PublicPlaylistVideoId UNIQUEIDENTIFIER,
     PlaylistId INTEGER NOT NULL,
     VideoId INTEGER NOT NULL,
     IsWatched BIT NOT NULL,

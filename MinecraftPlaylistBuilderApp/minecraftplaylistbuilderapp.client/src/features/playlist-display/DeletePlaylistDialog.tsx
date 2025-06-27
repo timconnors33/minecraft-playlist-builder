@@ -13,7 +13,7 @@ interface Props {
 function DeletePlaylistDialog({ playlistId }: Props) {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-    const { error, execute } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.write });
+    const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write] });
     const queryClient = useQueryClient();
 
     const deletePlaylistMn = useMutation({

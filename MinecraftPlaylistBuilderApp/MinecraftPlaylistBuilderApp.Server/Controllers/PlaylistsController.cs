@@ -69,7 +69,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Controllers
                 return BadRequest();
             }
 
-            return Ok(playlist);
+            return Created($"api/playlists/{playlist.PublicPlaylistId}", playlist);
         }
 
         [HttpPut("{playlistId}")]

@@ -59,7 +59,7 @@ const App = ({ instance }) => {
                     <Routes>
                         <Route path="/" element={<Layout />}>
                             <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />} />
-                            <Route path="playlist" element={<PlaylistVideoDisplay />} />
+                            <Route path="playlists/:playlistId" element={<PlaylistVideoDisplay />} />
                             <Route path="auth-response" element={<div>Authenticated!</div>} />
                             <Route path="playlists" element={<PlaylistDisplay />} />
                         </Route>

@@ -20,7 +20,7 @@ function EditPlaylistDialog({ playlistId, currentTitle }: Props) {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [playlistTitle, setPlaylistTitle] = useState<string>(currentTitle);
 
-    const { error, execute } = useFetchWithMsal({ scopes: protectedResources.playlistApi.scopes.write });
+    const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write] });
     const queryClient = useQueryClient();
 
     const { register, handleSubmit } = useForm<IFormInput>();

@@ -62,8 +62,14 @@ export const protectedResources = {
     playlistApi: {
         endpoint: '/api/playlists',
         scopes: {
-            read: ['api://922e867f-85d5-4f76-b6fd-eb78206a06f3/Playlists.Read'],
-            write: ['api://922e867f-85d5-4f76-b6fd-eb78206a06f3/Playlists.ReadWrite'],
+            read: 'api://922e867f-85d5-4f76-b6fd-eb78206a06f3/Playlists.Read',
+            write: 'api://922e867f-85d5-4f76-b6fd-eb78206a06f3/Playlists.ReadWrite',
+        },
+    },
+    playlistVideoApi: {
+        scopes: {
+            read: 'api://922e867f-85d5-4f76-b6fd-eb78206a06f3/PlaylistVideos.Read',
+            write: 'api://922e867f-85d5-4f76-b6fd-eb78206a06f3/PlaylistVideos.ReadWrite',
         },
     },
 };
