@@ -1,11 +1,11 @@
 import { Playlist, PlaylistVideo, Video } from "../../types/api";
 import PlaylistVideoCard from "./PlaylistVideoCard";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PaginatedList from "../../components/PaginatedList";
 import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { useQuery } from "@tanstack/react-query";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, FormControl, FormHelperText, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { UUID } from "crypto";
 import { useParams } from "react-router";
 
@@ -16,8 +16,12 @@ type Params = {
 function PlaylistVideoDisplay() {
     const { error, execute, result } = useFetchWithMsal({ scopes: [protectedResources.playlistVideoApi.scopes.read] });
 
-    const {playlistId} = useParams<Params>()
+    const { playlistId } = useParams<Params>()
 
+    const [filterType, setFilterType] = useState<string>('all');
+    const [filteredPlaylistVideos, setFilteredPlaylistVideos] = useState<PlaylistVideo[]>([]);
+
+    // TODO: Optimistically update the playlist video counts when the watched value is edited.
     const {
         data: playlistVideos = [],
         isLoading,
@@ -32,14 +36,33 @@ function PlaylistVideoDisplay() {
         enabled: !!result,
     });
 
+    useEffect(() => {
+        switch (filterType) {
+            case 'watched':
+                setFilteredPlaylistVideos(playlistVideos.filter((playlistVideo) => playlistVideo.isWatched));
+                break;
+            case 'unwatched':
+                setFilteredPlaylistVideos(playlistVideos.filter((playlistVideo) => playlistVideo.isWatched == false));
+                break;
+            default:
+                setFilteredPlaylistVideos(playlistVideos);
+                break;
+        }
+    }, [filterType])
+
+    const handleFilterChange = (event: SelectChangeEvent) => {
+        setFilterType(event.target.value);
+    }
+
     // TODO: Purify id? Check here and in VideoCard module
     const playlistVideoCards = useMemo(() => {
         console.log(playlistVideos);
-        playlistVideos.sort((a: PlaylistVideo, b: PlaylistVideo) => new Date(a.videoPublishedAt).getTime() - new Date(b.videoPublishedAt).getTime());
-        return playlistVideos.map((playlistVideo: PlaylistVideo) => (
-            <PlaylistVideoCard key={playlistVideo.videoYouTubeId} playlistId={playlistId} playlistVideo={playlistVideo}/>
+        // TODO: Change so I only have to sort this once
+        filteredPlaylistVideos.sort((a: PlaylistVideo, b: PlaylistVideo) => new Date(a.videoPublishedAt).getTime() - new Date(b.videoPublishedAt).getTime());
+        return filteredPlaylistVideos.map((playlistVideo: PlaylistVideo) => (
+            <PlaylistVideoCard key={playlistVideo.videoYouTubeId} playlistId={playlistId} playlistVideo={playlistVideo} />
         ))
-    })
+    }, [filteredPlaylistVideos])
 
     if (isLoading) { return <CircularProgress />; }
 
@@ -51,7 +74,25 @@ function PlaylistVideoDisplay() {
     return (
         <div>
             <h1>Playlist Videos</h1>
-            {playlistVideoCards !== null && <PaginatedList children={playlistVideoCards} />}
+            {playlistVideoCards !== null &&
+                <>
+                    <FormControl>
+                        <FormHelperText>Filter Videos</FormHelperText>
+                        <Select
+                            id='playlist-video-filter'
+                            label='Filter Videos'
+                            onChange={handleFilterChange}
+                            defaultValue="all"
+                            value={filterType}
+                        >
+                            <MenuItem value='all'>All ({playlistVideos.length})</MenuItem>
+                            <MenuItem value='unwatched'>Unwatched ({(playlistVideos.filter((playlistVideo) => playlistVideo.isWatched == false)).length})</MenuItem>
+                            <MenuItem value='watched'>Watched ({(playlistVideos.filter((playlistVideo) => playlistVideo.isWatched)).length})</MenuItem>
+
+                        </Select>
+                    </FormControl>
+                    <PaginatedList children={playlistVideoCards} />
+                </>}
         </div>
     )
 }
