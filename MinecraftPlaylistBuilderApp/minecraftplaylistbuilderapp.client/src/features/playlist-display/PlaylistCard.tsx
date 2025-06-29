@@ -1,9 +1,11 @@
-import { Button, Card, CardContent, Link, Typography } from "@mui/material";
+import { Button, Card, CardContent, Link, Paper, Typography } from "@mui/material";
 import { Playlist } from "../../types/api";
 import DOMPurify from "dompurify";
 import DeletePlaylistDialog from "./DeletePlaylistDialog";
 import EditPlaylistDialog from "./EditPlaylistDialog";
 import { NavLink } from "react-router";
+// TODO: Make this generic so it uses the currently selected theme regardless of the actual underlying theme
+import { darkTheme } from "../../Theme";
 
 interface Props {
     playlist: Playlist;
@@ -13,14 +15,15 @@ function PlaylistCard({ playlist }: Props) {
 
     // TODO: Need to make card element flexbox?
     return (
-        <Card sx={{ width: '700px' }}>
-            <CardContent>
+    // TODO: Make generic card element for shared styles
+        <Paper elevation={5} sx={{ width: '700px' }}>
+            <CardContent style={{padding: '16px'}}>
                 <div style={{ display: "flex", justifyContent: 'space-between' }}>
                     <div>
-                        <NavLink to={`/playlists/${playlist.publicPlaylistId}`}>
-                            <Link gutterBottom variant="h6" href={`https://youtu.be/B8-ZmuJixIg?si=iGwWVlt42EplNGgP`} color="inherit" sx={{ display: 'flex', alignItems: 'start', textAlign: 'start' }}>
-                            {DOMPurify.sanitize(playlist.playlistTitle)}
-                            </Link>
+                        <NavLink to={`/playlists/${playlist.publicPlaylistId}`} style={{color: darkTheme.palette.primary.main, textAlign: 'start'}}>
+                            <Typography gutterBottom variant="h6">
+                                {DOMPurify.sanitize(playlist.playlistTitle)}
+                            </Typography>
                         </NavLink>
                         <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'start' }}>
                             {DOMPurify.sanitize(playlist.seriesTitle)}
@@ -29,13 +32,13 @@ function PlaylistCard({ playlist }: Props) {
                             {DOMPurify.sanitize(playlist.seasonTitle)}
                         </Typography>
                     </div>
-                    <div style={{ display: "flex", flexDirection: 'column', justifyContent: 'space-between'}}>
-                        <EditPlaylistDialog playlistId={playlist.publicPlaylistId} currentTitle={playlist.playlistTitle}/>
-                        <DeletePlaylistDialog playlistId={playlist.publicPlaylistId}/>
+                    <div style={{ display: "flex", flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <EditPlaylistDialog playlistId={playlist.publicPlaylistId} currentTitle={playlist.playlistTitle} />
+                        <DeletePlaylistDialog playlistId={playlist.publicPlaylistId} />
                     </div>
                 </div>
             </CardContent>
-        </Card>
+        </Paper>
     )
 }
 

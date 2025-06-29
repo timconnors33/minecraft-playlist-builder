@@ -1,4 +1,4 @@
-import { Card, CardContent, FormControlLabel, FormGroup, Link, Typography } from "@mui/material";
+import { Card, CardContent, FormControlLabel, FormGroup, Link, Paper, Typography } from "@mui/material";
 import { PlaylistVideo } from "../../types/api";
 import DOMPurify from "dompurify";
 import Checkbox from '@mui/material/Checkbox';
@@ -7,6 +7,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { UUID } from "crypto";
+import { darkTheme } from "../../Theme";
 
 interface Props {
     playlistId: UUID;
@@ -41,11 +42,11 @@ function PlaylistVideoCard({ playlistId, playlistVideo }: Props) {
         });
 
     return (
-        <Card sx={{ width: '700px' }}>
-            <CardContent>
+        <Paper elevation={5} sx={{ width: '700px' }}>
+            <CardContent style={{padding: '16px'}}>
                 <div style={{ display: "flex", justifyContent: 'space-between' }}>
                     <div>
-                        <Link gutterBottom variant="h6" href={`https://www.youtube.com/watch?v=${playlistVideo.videoYouTubeId}`} color="inherit" sx={{ display: 'flex', alignItems: 'start', textAlign: 'start' }}>
+                        <Link gutterBottom variant="h6" href={`https://www.youtube.com/watch?v=${playlistVideo.videoYouTubeId}`} color="inherit" style={{color: darkTheme.palette.primary.main, textAlign: 'start'}}>
                             {DOMPurify.sanitize(playlistVideo.videoTitle)}
                         </Link>
                         <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'start' }}>
@@ -67,7 +68,7 @@ function PlaylistVideoCard({ playlistId, playlistVideo }: Props) {
                     </div>
                 </div>
             </CardContent>
-        </Card>
+        </Paper>
     )
 }
 

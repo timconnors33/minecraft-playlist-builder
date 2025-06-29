@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { CircularProgress, CssBaseline } from '@mui/material';
+import { CircularProgress, CssBaseline, Paper } from '@mui/material';
 import './App.css';
 import PlaylistInputForm from './features/playlist-input-form/components/PlaylistInputForm';
 import Header from './components/Header';
@@ -11,20 +11,15 @@ import { MsalProvider } from '@azure/msal-react';
 import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BASE_API_URL } from './utils/config';
-
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark'
-    }
-})
+import { darkTheme } from './Theme';
 
 function Layout() {
     return (
         <>
             <Header />
-            <div id='content'>
-                <Outlet />
-            </div>
+            <Paper elevation={1} style={{flex: '1 1 auto', padding: '10px', marginBottom: '10px'}}>
+                    <Outlet />
+            </Paper>
         </>
     );
 }

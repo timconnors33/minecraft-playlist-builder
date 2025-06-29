@@ -5,7 +5,7 @@ import PaginatedList from "../../components/PaginatedList";
 import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Divider, Paper } from "@mui/material";
 
 function PlaylistDisplay() {
 
@@ -41,6 +41,7 @@ function PlaylistDisplay() {
     return (
         <div>
             <h1>Playlists</h1>
+            <Divider/>
             {playlistCards !== null && <PaginatedList children={playlistCards} />}
         </div>
     )

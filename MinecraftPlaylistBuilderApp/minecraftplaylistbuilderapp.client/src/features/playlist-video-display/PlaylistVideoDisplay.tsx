@@ -5,7 +5,7 @@ import PaginatedList from "../../components/PaginatedList";
 import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { useQuery } from "@tanstack/react-query";
-import { CircularProgress, FormControl, FormHelperText, MenuItem, Select, SelectChangeEvent } from "@mui/material";
+import { CircularProgress, Divider, FormControl, FormHelperText, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { UUID } from "crypto";
 import { useParams } from "react-router";
 
@@ -48,7 +48,7 @@ function PlaylistVideoDisplay() {
                 setFilteredPlaylistVideos(playlistVideos);
                 break;
         }
-    }, [filterType])
+    }, [filterType, playlistVideos])
 
     const handleFilterChange = (event: SelectChangeEvent) => {
         setFilterType(event.target.value);
@@ -74,6 +74,7 @@ function PlaylistVideoDisplay() {
     return (
         <div>
             <h1>Playlist Videos</h1>
+            <Divider/>
             {playlistVideoCards !== null &&
                 <>
                     <FormControl>

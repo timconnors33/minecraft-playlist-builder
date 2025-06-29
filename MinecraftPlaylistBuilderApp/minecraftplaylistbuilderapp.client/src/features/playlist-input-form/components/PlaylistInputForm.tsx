@@ -193,7 +193,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     return (
         <>
             <AuthenticatedTemplate>
-                <form>
+                <form style={{width: '400px', padding: '20px'}}>
                     <TextField
                         required
                         id='outline-required'

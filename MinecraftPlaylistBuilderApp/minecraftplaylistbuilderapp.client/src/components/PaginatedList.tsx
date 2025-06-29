@@ -1,6 +1,6 @@
 import { useLocation } from "react-router";
 import { ReactNode, useEffect, useState } from "react";
-import { Pagination } from "@mui/material";
+import { Pagination, Paper } from "@mui/material";
 
 interface Props {
     children: ReactNode[];
@@ -25,14 +25,14 @@ function PaginatedList({ children }: Props) {
     }
 
     return (
-        <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+        <div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', marginBottom: '10px'}}>
                 {pageChildren}
             </div>
             {children.length > pageItemCount && (
-                <Pagination sx={{ display: 'flex', justifyContent: 'center' }} count={pageCount} page={page} onChange={handlePageChange} />
+                <Pagination sx={{ display: 'flex', justifyContent: 'center'}} count={pageCount} page={page} onChange={handlePageChange} />
             )}
-        </>
+        </div>
     )
 }
 
