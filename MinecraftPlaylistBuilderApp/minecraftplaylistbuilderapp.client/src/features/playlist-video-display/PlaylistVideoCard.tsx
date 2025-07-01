@@ -26,6 +26,7 @@ function PlaylistVideoCard({ playlistId, playlistVideo }: Props) {
         setIsWatched(event.target.checked);
         await editIsWatchedMn.mutateAsync(event.target.checked);
     }
+    // TODO: Explore using optimistic updates for this
     const editIsWatchedMn = useMutation({
             mutationKey: ['playlistVideos', playlistVideo.publicPlaylistVideoId],
             mutationFn: async (isWatchedVal: boolean) => {

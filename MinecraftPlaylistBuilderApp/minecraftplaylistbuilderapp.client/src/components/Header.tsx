@@ -16,11 +16,11 @@ const Header = () => {
                 <span>
                     <AuthenticatedTemplate>
                         <Button href={`${BASE_CLIENT_URL}/playlists`}>
-                            Playlists
+                            View Playlists
                         </Button>
                     </AuthenticatedTemplate>
                     <Button href={`${BASE_CLIENT_URL}`}>
-                        <AddIcon />
+                        Create Playlist
                     </Button>
                     <Button href='https://github.com/'>
                         <GitHubIcon />

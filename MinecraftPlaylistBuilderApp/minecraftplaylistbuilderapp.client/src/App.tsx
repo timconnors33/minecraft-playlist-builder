@@ -17,9 +17,7 @@ function Layout() {
     return (
         <>
             <Header />
-            <Paper elevation={1} style={{flex: '1 1 auto', padding: '10px', marginBottom: '10px'}}>
                     <Outlet />
-            </Paper>
         </>
     );
 }

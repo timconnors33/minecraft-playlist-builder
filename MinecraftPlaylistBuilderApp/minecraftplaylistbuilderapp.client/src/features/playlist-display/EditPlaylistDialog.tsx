@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogTitle, TextField } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -20,12 +20,17 @@ function EditPlaylistDialog({ playlistId, currentTitle }: Props) {
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const [playlistTitle, setPlaylistTitle] = useState<string>(currentTitle);
 
+    useEffect(() => {
+        setPlaylistTitle(currentTitle);
+    }, [currentTitle, openDialog])
+
     const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write] });
     const queryClient = useQueryClient();
 
     const { register, handleSubmit } = useForm<IFormInput>();
     const onSubmit: SubmitHandler<IFormInput> = async (data) => { 
         console.log(data);
+        // TODO: Only send request if the newly inputted title is different than the current one?
         await editPlaylistMn.mutateAsync(data.newTitle);
         setOpenDialog(false); 
     }

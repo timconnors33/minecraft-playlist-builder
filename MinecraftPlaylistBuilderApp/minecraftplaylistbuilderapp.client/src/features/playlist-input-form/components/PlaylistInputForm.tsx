@@ -12,6 +12,7 @@ import useFetchWithMsal from "../../../utils/useFetchWithMsal";
 import { protectedResources } from "../../../utils/authConfig";
 import { BASE_API_URL } from "../../../utils/config";
 import { UUID } from "crypto";
+import { BackgroundPaper } from "../../../components/BackgroundPaper";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 interface Props {
@@ -191,7 +192,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     // TODO: Implement flow for unauthenticated users
     return (
-        <>
+        <BackgroundPaper>
             <AuthenticatedTemplate>
                 <form style={{width: '400px', padding: '20px'}}>
                     <TextField
@@ -232,7 +233,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                     </Button>
                 </form>
             </AuthenticatedTemplate>
-        </>
+        </BackgroundPaper>
     );
 }
 

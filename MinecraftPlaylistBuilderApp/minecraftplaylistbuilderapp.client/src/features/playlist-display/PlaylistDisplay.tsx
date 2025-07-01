@@ -6,6 +6,8 @@ import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircularProgress, Divider, Paper } from "@mui/material";
+import { BackgroundPaper } from "../../components/BackgroundPaper";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 function PlaylistDisplay() {
 
@@ -31,7 +33,7 @@ function PlaylistDisplay() {
         ));
     }, [playlists]);
 
-    if (isLoading) { return <CircularProgress />; }
+    if (isLoading) { return <LoadingOverlay />; }
 
     if (isError) {
         console.log(queryError);
@@ -39,11 +41,11 @@ function PlaylistDisplay() {
     }
 
     return (
-        <div>
+        <BackgroundPaper>
             <h1>Playlists</h1>
             <Divider/>
             {playlistCards !== null && <PaginatedList children={playlistCards} />}
-        </div>
+        </BackgroundPaper>
     )
 }
 
