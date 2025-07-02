@@ -5,21 +5,20 @@ import '../Header.css'
 import SignInSignOutButton from './SignInSignOutButton';
 import { AuthenticatedTemplate } from '@azure/msal-react';
 import { BASE_CLIENT_URL } from '../utils/config';
-import AddIcon from '@mui/icons-material/Add';
 import { darkTheme } from '../Theme';
 
 const Header = () => {
     return (
         <header>
-            <Paper elevation={20} square style={{color: darkTheme.palette.primary.main, padding: '10px', display: 'flex', alignSelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', flexGrow: '1'}}>
-                <span>Minecraft Playlist Builder</span>
+            <Paper elevation={20} square style={{ color: darkTheme.palette.primary.main, padding: '10px', display: 'flex', alignSelf: 'stretch', justifyContent: 'space-between', alignItems: 'center', flexGrow: '1' }}>
+                <Button href={BASE_CLIENT_URL}>Minecraft Playlist Builder</Button>
                 <span>
                     <AuthenticatedTemplate>
                         <Button href={`${BASE_CLIENT_URL}/playlists`}>
                             View Playlists
                         </Button>
                     </AuthenticatedTemplate>
-                    <Button href={`${BASE_CLIENT_URL}`}>
+                    <Button href={`${BASE_CLIENT_URL}/create-playlist`}>
                         Create Playlist
                     </Button>
                     <Button href='https://github.com/'>

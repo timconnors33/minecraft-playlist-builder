@@ -228,7 +228,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                             </FormGroup>
                         </div>
                     )}
-                    <Button type="submit" onClick={handleSubmit}>
+                    <Button variant='contained' type="submit" onClick={handleSubmit}>
                         Submit
                     </Button>
                 </form>
