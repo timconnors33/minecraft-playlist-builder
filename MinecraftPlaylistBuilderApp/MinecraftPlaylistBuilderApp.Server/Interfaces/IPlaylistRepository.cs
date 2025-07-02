@@ -9,5 +9,6 @@ namespace MinecraftPlaylistBuilderApp.Server.Interfaces
         Task<Playlist> CreatePlaylistAsync(Playlist playlist);
         Task<Playlist> UpdatePlaylistAsync(Guid playlistId, Playlist newPlaylist);
         Task<bool> DeletePlaylistAsync(Guid playlistId);
+        Task<Guid> GetPlaylistOwnerAsync(Guid playlistId);
     }
 }

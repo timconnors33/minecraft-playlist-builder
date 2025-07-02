@@ -22,10 +22,14 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
 
         public async Task<bool> DeletePlaylistAsync(Guid playlistId)
         {
-            var playlist = await _context.Playlists.FindAsync(playlistId);
+            var playlist = await GetPlaylistAsync(playlistId);
             if (playlist == null)
             {
                 return false;
+            }
+            if (playlist.PlaylistVideos.Any())
+            {
+                _context.PlaylistVideos.RemoveRange(playlist.PlaylistVideos);
             }
             var removedPlaylist = _context.Playlists.Remove(playlist);
             await _context.SaveChangesAsync();
@@ -39,7 +43,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
 
         public async Task<List<Playlist>> GetAllByOwnerAsync(Guid ownerId)
         {
-            var playlists = await _context.Playlists.Where(playlist => playlist.PublicPlaylistId == ownerId).ToListAsync();
+            var playlists = await _context.Playlists.Where(playlist => playlist.OwnerId == ownerId).ToListAsync();
             return playlists;
         }
 
@@ -47,6 +51,16 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
         {
             var playlist = await _context.Playlists.SingleOrDefaultAsync(playlist => playlist.PublicPlaylistId == playlistId);
             return playlist;
+        }
+
+        public async Task<Guid> GetPlaylistOwnerAsync(Guid playlistId)
+        {
+            var playlist = await GetPlaylistAsync(playlistId);
+            if (playlist == null)
+            {
+                return Guid.Empty;
+            }
+            return playlist.OwnerId;
         }
 
         public async Task<Playlist> UpdatePlaylistAsync(Guid playlistId, Playlist newPlaylist)
@@ -57,6 +71,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
                 return null;
             }
             playlistToUpdate = newPlaylist;
+            await _context.SaveChangesAsync();
             return playlistToUpdate;
         }
     }

@@ -7,6 +7,7 @@ import {
 
 import { InteractionType } from '@azure/msal-browser';
 import { useMsal, useMsalAuthentication } from "@azure/msal-react";
+import { BASE_API_URL, BASE_CLIENT_URL } from './config';
 
 /**
  * Custom hook to call a web API using bearer token obtained from MSAL
@@ -22,7 +23,7 @@ const useFetchWithMsal = (msalRequest) => {
     const { result, error: msalError } = useMsalAuthentication(InteractionType.Popup, {
         ...msalRequest,
         account: instance.getActiveAccount(),
-        redirectUri: 'https://localhost:51252/auth-response'
+        redirectUri: `${BASE_CLIENT_URL}/auth-response`
     });
 
     /**
@@ -32,7 +33,7 @@ const useFetchWithMsal = (msalRequest) => {
      * @param {Object} data: The data to send to the endpoint, if any 
      * @returns JSON response
      */
-    const execute = async (method, endpoint, data) => {
+    const execute = async (method: string, endpoint: string, data: object | null = null) => {
         if (msalError) {
             setError(msalError);
             return;
@@ -55,7 +56,7 @@ const useFetchWithMsal = (msalRequest) => {
                 };
 
                 setIsLoading(true);
-                response = (await fetch(endpoint, options));
+                response = (await fetch(`${BASE_API_URL}${endpoint}`, options));
 
                 if ((response.status === 200 || response.status === 201)) {
                     let responseData = response;
@@ -74,7 +75,6 @@ const useFetchWithMsal = (msalRequest) => {
                 setIsLoading(false);
                 return response;
             } catch (e) {
-                console.log("Touch purple");
                 setError(e);
                 setIsLoading(false);
                 throw e;
@@ -87,6 +87,7 @@ const useFetchWithMsal = (msalRequest) => {
         error,
         data,
         execute: useCallback(execute, [result, msalError]), // to avoid infinite calls when inside a `useEffect`
+        result,
     };
 };
 
