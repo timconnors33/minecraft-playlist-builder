@@ -7,11 +7,13 @@ import '../PlaylistInputForm.css'
 import ChannelCheckbox from "./ChannelCheckbox";
 import { useNavigate } from "react-router"
 import { AuthenticatedTemplate } from "@azure/msal-react";
-import { protectedResources } from "../../../utils/authConfig";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useFetchWithMsal from "../../../utils/useFetchWithMsal";
+import { protectedResources } from "../../../utils/authConfig";
+import { BASE_API_URL } from "../../../utils/config";
+import { UUID } from "crypto";
+import { BackgroundPaper } from "../../../components/BackgroundPaper";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
-
-const BASE_URL = 'https://localhost:7258';
 
 interface Props {
     seasonAppearance: SeasonAppearance;
@@ -31,9 +33,30 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
 
-    const {error, execute } = useFetchWithMsal({scopes: protectedResources.playlistApi.scopes.write});
-
     let navigate = useNavigate();
+
+    const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write, protectedResources.playlistVideoApi.scopes.write] });
+    const queryClient = useQueryClient();
+
+    // TODO: Add payload to mutation key?
+    const createPlaylistMutation = useMutation({
+        mutationKey: ['createPlaylists'],
+        mutationFn: async (payload: CreatePlaylistPayload) => {
+            return await execute('POST', protectedResources.playlistApi.endpoint, payload);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['playlists'] });
+        }
+    });
+
+    const createPlaylistVideosMutation = useMutation({
+        mutationKey: ['createPlaylistVideos'],
+        mutationFn: async (params: { playlistId: UUID, payload: string[] }) => {
+            console.log(params.playlistId);
+            console.log(params.payload);
+            return await execute('POST', `${protectedResources.playlistApi.endpoint}/${params.playlistId}/playlistVideos`, { channelNames: params.payload })
+        }
+    })
 
     const fetchSeasons = async (seriesTitle: string) => {
         try {
@@ -47,10 +70,6 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             console.log(err);
         }
     };
-
-    const handlePlaylistTitleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setPlaylistTitle(event.target.value);
-    }
 
     const handleSeriesChange = (event: SelectChangeEvent) => {
         const selectedTitle = event.target.value as string;
@@ -83,7 +102,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             playlistTitle: playlistTitle,
             seriesTitle: selectedSeries.seriesTitle,
             seasonTitle: selectedSeason.seasonTitle
-        }
+        };
+
         await createPlaylist(playlistPayload);
 
         const videosPayload: GetVideosPayload = {
@@ -91,14 +111,14 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        const videos: Video[] = await fetchVideos(videosPayload);
+        //const videos: Video[] = await fetchVideos(videosPayload);
         //await handleAuth(videos);
-        navigate("/playlist", { state: { videos } });
+        navigate("/playlists");
     }
 
-    const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
+    /* const fetchVideos = async (payload: GetVideosPayload): Promise<Video[]> => {
         console.log(JSON.stringify(payload));
-        const response = await fetch(`${BASE_URL}/api/videos`, {
+        const response = await fetch(`${BASE_API_URL}/api/videos`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -111,23 +131,28 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         const videos: Video[] = await response.json();
         console.log('Fetched videos');
         return videos;
-    }
+    } */
 
     const createPlaylist = async (payload: CreatePlaylistPayload) => {
         console.log(JSON.stringify(payload));
-        console.log(`MSAL error: ${error}`);
 
-        execute('POST', protectedResources.playlistApi.endpoint, payload).then((response) =>{
-            if (response) {
-                console.log(response);
-                console.log('Got playlists');
-            } else {
-                console.log(error);
-                console.log("Error creating playlist");
-            }
-        })
-        //const createdPlaylist: Playlist = await response.json();
-        //return createdPlaylist;
+        try {
+            const response = await createPlaylistMutation.mutateAsync(payload);
+            console.log(response);
+            const createdPlaylist: Playlist = response
+            console.log(createdPlaylist)
+            console.log('Created playlist');
+            const playlistId: UUID = createdPlaylist.publicPlaylistId;
+
+            const channelNames = selectedChannels.map(channel => channel.channelName)
+            const createPlaylistVideosRes = await createPlaylistVideosMutation.mutateAsync({ playlistId: playlistId, payload: channelNames });
+            console.log('Created playlist items');
+            console.log(createPlaylistVideosRes);
+
+        } catch (error) {
+            console.log("Error creating playlist");
+            console.log(error);
+        }
     }
 
     const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -167,15 +192,15 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     // TODO: Implement flow for unauthenticated users
     return (
-        <>
-            <AuthenticatedTemplate>
-                <form>
+        <AuthenticatedTemplate>
+            <BackgroundPaper>
+                <form style={{ width: '400px', padding: '20px' }}>
                     <TextField
                         required
                         id='outline-required'
                         label='Playlist Title'
-                        value={playlistTitle}
-
+                        defaultValue={playlistTitle}
+                        onChange={e => setPlaylistTitle(e.target.value)}
                     />
                     <div id='select-container'>
                         <SeriesSelect
@@ -207,8 +232,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         Submit
                     </Button>
                 </form>
-            </AuthenticatedTemplate>
-        </>
+            </BackgroundPaper>
+        </AuthenticatedTemplate>
     );
 }
 

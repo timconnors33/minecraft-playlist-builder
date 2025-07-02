@@ -3,6 +3,8 @@
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
 import { loginRequest } from '../utils/authConfig';
 import { Button } from '@mui/material';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const SignInSignOutButton = () => {
     const { instance } = useMsal();
@@ -26,7 +28,7 @@ const SignInSignOutButton = () => {
     };
 
     const handleLogoutRedirect = () => {
-        instance.loginRedirect({
+        instance.logoutRedirect({
             account: instance.getActiveAccount(),
         });
     };
@@ -41,19 +43,13 @@ const SignInSignOutButton = () => {
     return (
         <>
             <UnauthenticatedTemplate>
-                <Button onClick={handleLoginPopUp}>
-                    Sign in using Popup
-                </Button>
                 <Button onClick={handleLoginRedirect}>
-                    Sign in using Redirect
+                    <LoginIcon />
                 </Button>
             </UnauthenticatedTemplate>
             <AuthenticatedTemplate>
-                <Button onClick={handleLogoutPopup}>
-                    Sign out using Popup
-                </Button>
                 <Button onClick={handleLogoutRedirect}>
-                    Sign out using Redirect
+                    <LogoutIcon />
                 </Button>
             </AuthenticatedTemplate>
         </>

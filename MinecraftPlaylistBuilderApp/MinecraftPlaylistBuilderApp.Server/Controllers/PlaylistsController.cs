@@ -69,7 +69,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Controllers
                 return BadRequest();
             }
 
-            return Ok(playlist);
+            return Created($"api/playlists/{playlist.PublicPlaylistId}", playlist);
         }
 
         [HttpPut("{playlistId}")]
@@ -95,7 +95,7 @@ namespace MinecraftPlaylistBuilderApp.Server.Controllers
         )]
         public async Task<IActionResult> DeleteAsync(Guid playlistId)
         {
-            var isDeleted = await _playlistService.DeletePlaylistAsync(playlistId, GetUserId());
+            var isDeleted = await _playlistService.DeletePlaylistAsync(GetUserId(), playlistId);
             if (!isDeleted)
             {
                 return NotFound();

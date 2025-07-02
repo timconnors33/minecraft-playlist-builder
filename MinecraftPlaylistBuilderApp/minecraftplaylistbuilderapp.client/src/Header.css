@@ -1,12 +1,11 @@
 header {
     display: flex;
     align-self: stretch;
-    padding: 1rem;
     font-family: 'Courier New', Courier, monospace, sans-serif;
     justify-content: space-between;
     align-items: center;
-    border-bottom-width: 1px;
-    border-bottom-color: white;
-    border-bottom-style: solid;
     margin-bottom: 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1200;
   }

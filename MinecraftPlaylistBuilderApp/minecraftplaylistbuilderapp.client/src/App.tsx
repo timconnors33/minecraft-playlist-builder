@@ -1,40 +1,37 @@
 import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { CircularProgress, CssBaseline } from '@mui/material';
+import { CircularProgress, CssBaseline, Paper } from '@mui/material';
 import './App.css';
 import PlaylistInputForm from './features/playlist-input-form/components/PlaylistInputForm';
 import Header from './components/Header';
 import { SeasonAppearance } from './types/api';
 import { Outlet, Route, Routes } from 'react-router';
-import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
+import PlaylistVideoDisplay from './features/playlist-video-display/PlaylistVideoDisplay';
 import { MsalProvider } from '@azure/msal-react';
-
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark'
-    }
-})
-
-const BASE_URL = 'https://localhost:7258';
+import PlaylistDisplay from './features/playlist-display/PlaylistDisplay';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BASE_API_URL } from './utils/config';
+import { darkTheme } from './Theme';
+import LoadingOverlay from './components/LoadingOverlay';
 
 function Layout() {
     return (
         <>
             <Header />
-            <div id='content'>
-                <Outlet />
-            </div>
+                    <Outlet />
         </>
     );
 }
 
-const App = ({instance}) => {
+const queryClient = new QueryClient();
+
+const App = ({ instance }) => {
 
     const [seasonAppearance, setSeasonAppearance] = useState<SeasonAppearance>();
 
     useEffect(() => {
         const fetchSeasonAppearance = async () => {
-            const response = await fetch(`${BASE_URL}/api/seasonappearances`)
+            const response = await fetch(`${BASE_API_URL}/api/seasonappearances`)
             if (!response.ok) {
                 throw new Error('Failed to fetch season appearance data');
             }
@@ -50,16 +47,19 @@ const App = ({instance}) => {
 
     return (
         <MsalProvider instance={instance}>
-            <ThemeProvider theme={darkTheme}>
-                <CssBaseline />
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <CircularProgress />} />
-                        <Route path="playlist" element={<PlaylistDisplay />} />
-                        <Route path="auth-response" element={<div>Authenticated!</div>} />
-                    </Route>
-                </Routes>
-            </ThemeProvider>
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={darkTheme}>
+                    <CssBaseline />
+                    <Routes>
+                        <Route path="/" element={<Layout />}>
+                            <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <LoadingOverlay />} />
+                            <Route path="playlists/:playlistId" element={<PlaylistVideoDisplay />} />
+                            <Route path="auth-response" element={<div>Authenticated!</div>} />
+                            <Route path="playlists" element={<PlaylistDisplay />} />
+                        </Route>
+                    </Routes>
+                </ThemeProvider>
+            </QueryClientProvider>
         </MsalProvider>
     )
 }
