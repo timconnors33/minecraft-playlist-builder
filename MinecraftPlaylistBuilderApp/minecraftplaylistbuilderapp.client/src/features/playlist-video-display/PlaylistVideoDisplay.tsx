@@ -8,6 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { CircularProgress, Divider, FormControl, FormHelperText, MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { UUID } from "crypto";
 import { useParams } from "react-router";
+import { BackgroundPaper } from "../../components/BackgroundPaper";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 type Params = {
     playlistId: UUID
@@ -64,7 +66,7 @@ function PlaylistVideoDisplay() {
         ))
     }, [filteredPlaylistVideos])
 
-    if (isLoading) { return <CircularProgress />; }
+    if (isLoading) { return <LoadingOverlay />; }
 
     if (isError) {
         console.log(queryError);
@@ -72,7 +74,7 @@ function PlaylistVideoDisplay() {
     }
 
     return (
-        <div>
+        <BackgroundPaper>
             <h1>Playlist Videos</h1>
             <Divider/>
             {playlistVideoCards !== null &&
@@ -94,7 +96,7 @@ function PlaylistVideoDisplay() {
                     </FormControl>
                     <PaginatedList children={playlistVideoCards} />
                 </>}
-        </div>
+        </BackgroundPaper>
     )
 }
 

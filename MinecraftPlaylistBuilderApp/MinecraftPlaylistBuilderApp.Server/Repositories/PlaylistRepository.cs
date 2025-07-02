@@ -27,6 +27,10 @@ namespace MinecraftPlaylistBuilderApp.Server.Repositories
             {
                 return false;
             }
+            if (playlist.PlaylistVideos.Any())
+            {
+                _context.PlaylistVideos.RemoveRange(playlist.PlaylistVideos);
+            }
             var removedPlaylist = _context.Playlists.Remove(playlist);
             await _context.SaveChangesAsync();
             // TODO: Is this if statement necessary? If so, should it go before or after saving changes?

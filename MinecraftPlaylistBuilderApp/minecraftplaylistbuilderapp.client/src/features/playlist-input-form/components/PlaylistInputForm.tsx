@@ -35,7 +35,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     let navigate = useNavigate();
 
-    const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write, protectedResources.playlistVideoApi.scopes.write]});
+    const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write, protectedResources.playlistVideoApi.scopes.write] });
     const queryClient = useQueryClient();
 
     // TODO: Add payload to mutation key?
@@ -51,10 +51,10 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const createPlaylistVideosMutation = useMutation({
         mutationKey: ['createPlaylistVideos'],
-        mutationFn: async (params : {playlistId : UUID, payload: string[]}) => {
+        mutationFn: async (params: { playlistId: UUID, payload: string[] }) => {
             console.log(params.playlistId);
             console.log(params.payload);
-            return await execute('POST', `${protectedResources.playlistApi.endpoint}/${params.playlistId}/playlistVideos`, {channelNames: params.payload})
+            return await execute('POST', `${protectedResources.playlistApi.endpoint}/${params.playlistId}/playlistVideos`, { channelNames: params.payload })
         }
     })
 
@@ -139,13 +139,13 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         try {
             const response = await createPlaylistMutation.mutateAsync(payload);
             console.log(response);
-            const createdPlaylist : Playlist = response
+            const createdPlaylist: Playlist = response
             console.log(createdPlaylist)
             console.log('Created playlist');
-            const playlistId : UUID = createdPlaylist.publicPlaylistId;
-            
+            const playlistId: UUID = createdPlaylist.publicPlaylistId;
+
             const channelNames = selectedChannels.map(channel => channel.channelName)
-            const createPlaylistVideosRes = await createPlaylistVideosMutation.mutateAsync({playlistId: playlistId, payload: channelNames});
+            const createPlaylistVideosRes = await createPlaylistVideosMutation.mutateAsync({ playlistId: playlistId, payload: channelNames });
             console.log('Created playlist items');
             console.log(createPlaylistVideosRes);
 
@@ -192,9 +192,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     // TODO: Implement flow for unauthenticated users
     return (
-        <BackgroundPaper>
-            <AuthenticatedTemplate>
-                <form style={{width: '400px', padding: '20px'}}>
+        <AuthenticatedTemplate>
+            <BackgroundPaper>
+                <form style={{ width: '400px', padding: '20px' }}>
                     <TextField
                         required
                         id='outline-required'
@@ -232,8 +232,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         Submit
                     </Button>
                 </form>
-            </AuthenticatedTemplate>
-        </BackgroundPaper>
+            </BackgroundPaper>
+        </AuthenticatedTemplate>
     );
 }
 
