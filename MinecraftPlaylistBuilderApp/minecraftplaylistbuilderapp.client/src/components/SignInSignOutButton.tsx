@@ -1,12 +1,14 @@
 // CODE SOURCED FROM https://github.com/Azure-Samples/ms-identity-ciam-javascript-tutorial.git WITH MODIFICATION FOR USE IN THIS PROJECT
 
 import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
-import { loginRequest } from '../utils/authConfig';
+import { loginRequest, protectedResources } from '../utils/authConfig';
 import { Button } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { BASE_CLIENT_URL } from '../utils/config';
 
 const SignInSignOutButton = () => {
+
     const { instance } = useMsal();
 
     let activeAccount;
@@ -16,14 +18,17 @@ const SignInSignOutButton = () => {
     };
 
     const handleLoginRedirect = () => {
-        instance.loginRedirect(loginRequest)
-            .catch((err) => console.log(err));
+        try {
+            instance.loginRedirect(loginRequest)
+        } catch (err) {
+            console.log(err);
+        }
     };
 
     const handleLoginPopUp = () => {
         instance.loginPopup({
             ...loginRequest,
-            redirectUri: 'auth-response'
+            redirectUri: `${BASE_CLIENT_URL}/auth-response`
         })
     };
 
@@ -35,7 +40,7 @@ const SignInSignOutButton = () => {
 
     const handleLogoutPopup = () => {
         instance.logoutPopup({
-            mainWindowRedirectUri: '/',
+            mainWindowRedirectUri: `${BASE_CLIENT_URL}/`,
             account: instance.getActiveAccount(),
         })
     };

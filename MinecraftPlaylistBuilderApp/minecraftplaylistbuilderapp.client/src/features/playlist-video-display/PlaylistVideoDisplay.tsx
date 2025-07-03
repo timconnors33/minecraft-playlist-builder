@@ -10,12 +10,22 @@ import { UUID } from "crypto";
 import { useParams } from "react-router";
 import { BackgroundPaper } from "../../components/BackgroundPaper";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import { useMsal } from "@azure/msal-react";
 
 type Params = {
     playlistId: UUID
 }
 
 function PlaylistVideoDisplay() {
+
+    const tokenRequest = {
+        scopes: [protectedResources.playlistVideoApi.scopes.read,
+        protectedResources.playlistVideoApi.scopes.write
+        ]
+    }
+
+    const { instance } = useMsal();
+
     const { error, execute, result } = useFetchWithMsal({ scopes: [protectedResources.playlistVideoApi.scopes.read] });
 
     const { playlistId } = useParams<Params>()
@@ -52,6 +62,18 @@ function PlaylistVideoDisplay() {
         }
     }, [filterType, playlistVideos])
 
+    useEffect(() => {
+        const getToken = async () => {
+            const account = instance.getActiveAccount();
+            if (account) {
+                const tokenResponse = await instance.acquireTokenSilent({
+                    ...tokenRequest,
+                });
+            }
+        };
+        getToken();
+    }, [instance])
+
     const handleFilterChange = (event: SelectChangeEvent) => {
         setFilterType(event.target.value);
     }
@@ -76,7 +98,7 @@ function PlaylistVideoDisplay() {
     return (
         <BackgroundPaper>
             <h1>Playlist Videos</h1>
-            <Divider/>
+            <Divider />
             {playlistVideoCards !== null &&
                 <>
                     <FormControl>
