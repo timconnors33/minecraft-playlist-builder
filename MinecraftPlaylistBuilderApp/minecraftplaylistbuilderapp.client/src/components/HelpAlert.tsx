@@ -33,6 +33,9 @@ const HelpAlert = () => {
                         Here's how to use make and use your playlist:
                         <ol>
                             <li>
+                                Sign in and click the "Create Playlist" button at the top of the page.
+                            </li>
+                            <li>
                                 Use the drop-down menus to select the series and season of your choice.
                             </li>
                             <li>

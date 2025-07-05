@@ -1,10 +1,29 @@
 import { Box, Button, Card, Typography } from "@mui/material"
 import { darkTheme } from "../Theme"
 import { BackgroundPaper } from "./BackgroundPaper"
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react"
+import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from "@azure/msal-react"
 import { BASE_CLIENT_URL } from "../utils/config"
+import { loginRequest } from "../utils/authConfig"
 
 export const Landing = () => {
+
+    // TODO: Extract this code to a shared resource with the SignInSignOutButton component
+    const { instance } = useMsal();
+
+    let activeAccount;
+
+    if (instance) {
+        activeAccount = instance.getActiveAccount();
+    };
+
+    const handleLoginRedirect = () => {
+        try {
+            instance.loginRedirect(loginRequest)
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
     return (
         <Box style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly', flexGrow: 1, alignItems: 'center', maxWidth: '700px' }}>
             <Card sx={{ borderWidth: '1px', borderStyle: 'solid', borderColor: 'primary.main', padding: '10px', borderRadius: '10px' }}>
@@ -23,7 +42,7 @@ export const Landing = () => {
                 </AuthenticatedTemplate>
             </Card>
             <UnauthenticatedTemplate>
-                <Button color='secondary' variant="contained" style={{ borderRadius: '8px' }}>
+                <Button onClick={handleLoginRedirect} color='secondary' variant="contained" style={{ borderRadius: '8px' }}>
                     Sign Up or Log in
                 </Button>
             </UnauthenticatedTemplate>
