@@ -13,6 +13,7 @@ import { protectedResources } from "../../../utils/authConfig";
 import { BASE_API_URL } from "../../../utils/config";
 import { UUID } from "crypto";
 import { BackgroundPaper } from "../../../components/BackgroundPaper";
+import { ChannelForm } from "./ChannelForm";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 interface Props {
@@ -37,6 +38,8 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
     const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write, protectedResources.playlistVideoApi.scopes.write] });
     const queryClient = useQueryClient();
+
+    const [selectedChannelsError, setSelectedChannelsError] = useState<boolean>((selectedChannels.length < 1) || (selectedChannels.length > 5));
 
     // TODO: Add payload to mutation key?
     const createPlaylistMutation = useMutation({
@@ -169,6 +172,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             newSelectedChannels.push(channel)
         }
         setSelectedChannels(newSelectedChannels);
+        setSelectedChannelsError((newSelectedChannels.length < 1) || (newSelectedChannels.length > 5));
     }
 
     useEffect(() => {
@@ -215,20 +219,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         />
                     </div>
                     {channels && (
-                        <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh' }}>
-                            <FormHelperText>Channels</FormHelperText>
-                            <FormGroup id='channel-checkboxes' >
-                                {channels.map((channel) => (
-                                    <ChannelCheckbox
-                                        channel={channel}
-                                        onChange={handleChannelCheckboxChange}
-                                        key={channel.channelName}
-                                    />
-                                ))}
-                            </FormGroup>
-                        </div>
+                        <ChannelForm channels={channels} onChange={handleChannelCheckboxChange} error={selectedChannelsError}/>
                     )}
-                    <Button variant='contained' type="submit" onClick={handleSubmit}>
+                    <Button  color='secondary' variant="contained" style={{ borderRadius: '8px' }} type="submit" onClick={handleSubmit}>
                         Submit
                     </Button>
                 </form>
