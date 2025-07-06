@@ -36,7 +36,7 @@ function PlaylistDisplay() {
     }, [playlists]);
 
     useEffect(() => {
-        setPlaylistCount(playlists.length)
+        setPlaylistCount(playlists.length);
     }, [playlists])
 
     if (isLoading) { return <LoadingOverlay />; }

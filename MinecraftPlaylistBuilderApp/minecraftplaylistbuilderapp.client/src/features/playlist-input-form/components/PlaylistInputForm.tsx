@@ -1,6 +1,6 @@
-import { Button, FormGroup, FormHelperText, SelectChangeEvent, TextField } from "@mui/material";
+import { Button, FormGroup, FormHelperText, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload, CreatePlaylistPayload, Playlist } from "../../../types/api";
+import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload, CreatePlaylistPayload, Playlist, PlaylistFormInput } from "../../../types/api";
 import SeasonSelect from "./SeasonSelect";
 import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
@@ -14,6 +14,8 @@ import { BASE_API_URL } from "../../../utils/config";
 import { UUID } from "crypto";
 import { BackgroundPaper } from "../../../components/BackgroundPaper";
 import { ChannelForm } from "./ChannelForm";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import DOMPurify from "dompurify";
 //import { handleAuth } from "../../youtube-playlist-creation/GoogleApiHandler";
 
 interface Props {
@@ -21,7 +23,6 @@ interface Props {
 }
 
 const PlaylistInputForm = ({ seasonAppearance }: Props) => {
-    const [playlistTitle, setPlaylistTitle] = useState<string>('Minecraft Playlist');
 
     const [seriesList, setSeriesList] = useState<Series[]>(seasonAppearance.series);
     // TODO: Check using undefined here
@@ -40,6 +41,15 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const queryClient = useQueryClient();
 
     const [selectedChannelsError, setSelectedChannelsError] = useState<boolean>((selectedChannels.length < 1) || (selectedChannels.length > 5));
+
+    const { control, handleSubmit, formState: { errors } } = useForm({
+        defaultValues: {
+            playlistTitle: "Minecraft Playlist",
+            seriesTitle: selectedSeries.seriesTitle,
+            seasonTitle: selectedSeason.seasonTitle,
+            channels: [] as string[]
+        }
+    })
 
     // TODO: Add payload to mutation key?
     const createPlaylistMutation = useMutation({
@@ -74,32 +84,18 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
     };
 
-    const handleSeriesChange = (event: SelectChangeEvent) => {
-        const selectedTitle = event.target.value as string;
-        const series = seasonAppearance.series.find((series: Series) => series.seriesTitle === selectedTitle)
-        if (!series) {
-            throw new Error('The selected series could not be found.');
-        }
-        setSelectedSeries(series);
-        setSeasons([]);
-        setChannels([]);
-        fetchSeasons(selectedTitle)
-    };
+    const onSubmit: SubmitHandler<PlaylistFormInput> = async (data) => {
+        const playlistPayload: CreatePlaylistPayload = {
+            playlistTitle: data.playlistTitle,
+            seriesTitle: data.seriesTitle,
+            seasonTitle: data.seasonTitle
+        };
 
-    const handleSeasonChange = (event: SelectChangeEvent) => {
-        if (selectedSeries) {
-            const selectedTitle = event.target.value as string;
-            const season = selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle)
-            if (!season) {
-                throw new Error('The selected season could not be found.');
-            }
-            setSelectedSeason(season);
-            setChannels([]);
-            setSelectedChannels([]);
-        }
-    };
+        await createPlaylist(playlistPayload);
+        navigate('/playlists');
+    }
 
-    const handleSubmit = async (event: FormEvent) => {
+    const handleSubmitPlaylist = async (event: FormEvent) => {
         event.preventDefault();
         const playlistPayload: CreatePlaylistPayload = {
             playlistTitle: playlistTitle,
@@ -109,13 +105,13 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
 
         await createPlaylist(playlistPayload);
 
-        const videosPayload: GetVideosPayload = {
+        /* const videosPayload: GetVideosPayload = {
             seriesTitle: selectedSeries.seriesTitle,
             seasonTitle: selectedSeason.seasonTitle,
             channelNames: selectedChannels.map(channel => channel.channelName)
         }
-        //const videos: Video[] = await fetchVideos(videosPayload);
-        //await handleAuth(videos);
+        const videos: Video[] = await fetchVideos(videosPayload);
+        await handleAuth(videos); */
         navigate("/playlists");
     }
 
@@ -198,30 +194,97 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     return (
         <AuthenticatedTemplate>
             <BackgroundPaper>
-                <form style={{ width: '400px', padding: '20px' }}>
-                    <TextField
-                        required
-                        id='outline-required'
-                        label='Playlist Title'
-                        defaultValue={playlistTitle}
-                        onChange={e => setPlaylistTitle(e.target.value)}
+                <form style={{ width: '400px', padding: '20px' }} onSubmit={handleSubmit(onSubmit)}>
+                    <Controller
+                        name="playlistTitle"
+                        control={control}
+                        render={({ field }) => (
+                            <TextField
+                                {...field}
+                                required
+                                id='outline-required'
+                                label='Playlist Title'
+                            />)
+                        }
                     />
                     <div id='select-container'>
-                        <SeriesSelect
-                            seriesList={seriesList}
-                            selectedSeries={selectedSeries}
-                            onSeriesChange={handleSeriesChange}
+                        <Controller
+                            name='seriesTitle'
+                            control={control}
+                            render={({ field }) => (
+                                <div>
+                                    <FormHelperText>Series</FormHelperText>
+                                    <Select
+                                        {...field}
+                                        value={selectedSeries && DOMPurify.sanitize(selectedSeries.seriesTitle)}
+                                        label="Series"
+                                        onChange={(event: SelectChangeEvent<string>) => {
+                                            field.onChange(event.target.value);
+                                            const selectedTitle = event.target.value as string;
+                                            const series = seasonAppearance.series.find((series: Series) => series.seriesTitle === selectedTitle)
+                                            if (!series) {
+                                                throw new Error('The selected series could not be found.');
+                                            }
+                                            setSelectedSeries(series);
+                                            setSeasons([]);
+                                            setChannels([]);
+                                            fetchSeasons(selectedTitle)
+                                        }}
+                                        id='series-select'
+                                    >
+                                        {seriesList?.map((series) => (
+                                            <MenuItem value={DOMPurify.sanitize(series.seriesTitle)} key={DOMPurify.sanitize(series.seriesTitle)}>{DOMPurify.sanitize(series.seriesTitle)}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </div>
+                            )}
                         />
-                        <SeasonSelect
-                            seasons={seasons}
-                            selectedSeason={selectedSeason}
-                            onSeasonChange={handleSeasonChange}
+                        <Controller
+                            name='seasonTitle'
+                            control={control}
+                            render={({ field }) => (
+                                <div>
+                                    <FormHelperText>Season</FormHelperText>
+                                    <Select
+                                        {...field}
+                                        value={selectedSeason ? DOMPurify.sanitize(selectedSeason.seasonTitle) : undefined}
+                                        label="Season"
+                                        onChange={(event: SelectChangeEvent<string>) => {
+                                            if (selectedSeries) {
+                                                field.onChange(event.target.value);
+                                                const selectedTitle = event.target.value as string;
+                                                const season = selectedSeries.seasons.find((season: Season) => season.seasonTitle === selectedTitle)
+                                                if (!season) {
+                                                    throw new Error('The selected season could not be found.');
+                                                }
+                                                setSelectedSeason(season);
+                                                setChannels([]);
+                                                setSelectedChannels([]);
+                                            }
+                                        }}
+                                    >
+                                        {seasons?.map((season) => (
+                                            <MenuItem value={DOMPurify.sanitize(season.seasonTitle)} key={DOMPurify.sanitize(season.seasonTitle)}>{DOMPurify.sanitize(season.seasonTitle)}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </div>
+                            )}
                         />
                     </div>
                     {channels && (
-                        <ChannelForm channels={channels} onChange={handleChannelCheckboxChange} error={selectedChannelsError}/>
-                    )}
-                    <Button  color='secondary' variant="contained" style={{ borderRadius: '8px' }} type="submit" onClick={handleSubmit}>
+                        <Controller
+                            name='channels'
+                            control={control}
+                            render={({ field }) => (
+                                <ChannelForm
+                                    {...field}
+                                    channels={channels}
+                                    onChange={handleChannelCheckboxChange}
+                                    error={selectedChannelsError}
+                                />
+                            )}
+                        />)}
+                    <Button color='secondary' variant="contained" style={{ borderRadius: '8px' }} type="submit">
                         Submit
                     </Button>
                 </form>

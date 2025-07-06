@@ -54,3 +54,10 @@ export interface Playlist {
     seriesTitle: string;
     seasonTitle: string;
 }
+
+export interface PlaylistFormInput {
+    playlistTitle: string;
+    seriesTitle: string;
+    seasonTitle: string;
+    channels: string[];
+}
