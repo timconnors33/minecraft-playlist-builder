@@ -1,4 +1,4 @@
-import { Button, FormGroup, FormHelperText, MenuItem, Select, SelectChangeEvent, TextField } from "@mui/material";
+import { Button, FormGroup, FormHelperText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload, CreatePlaylistPayload, Playlist, PlaylistFormInput } from "../../../types/api";
 import SeasonSelect from "./SeasonSelect";
@@ -91,7 +91,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             seasonTitle: data.seasonTitle
         };
 
-        await createPlaylist(playlistPayload);
+        await createPlaylist(playlistPayload, data.channels);
         navigate('/playlists');
     }
 
@@ -132,7 +132,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         return videos;
     } */
 
-    const createPlaylist = async (payload: CreatePlaylistPayload) => {
+    const createPlaylist = async (payload: CreatePlaylistPayload, playlistChannels: string[]) => {
         console.log(JSON.stringify(payload));
 
         try {
@@ -143,8 +143,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
             console.log('Created playlist');
             const playlistId: UUID = createdPlaylist.publicPlaylistId;
 
-            const channelNames = selectedChannels.map(channel => channel.channelName)
-            const createPlaylistVideosRes = await createPlaylistVideosMutation.mutateAsync({ playlistId: playlistId, payload: channelNames });
+            const createPlaylistVideosRes = await createPlaylistVideosMutation.mutateAsync({ playlistId: playlistId, payload: playlistChannels });
             console.log('Created playlist items');
             console.log(createPlaylistVideosRes);
 
@@ -198,6 +197,12 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                     <Controller
                         name="playlistTitle"
                         control={control}
+                        rules={{
+                            required: true,
+                            minLength: 1,
+                            maxLength: 64,
+                            pattern: /^\w+( \w+)*$/
+                        }}
                         render={({ field }) => (
                             <TextField
                                 {...field}
@@ -272,18 +277,16 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         />
                     </div>
                     {channels && (
-                        <Controller
-                            name='channels'
+                        <ChannelForm
+                            channels={channels}
+                            error={selectedChannelsError}
                             control={control}
-                            render={({ field }) => (
-                                <ChannelForm
-                                    {...field}
-                                    channels={channels}
-                                    onChange={handleChannelCheckboxChange}
-                                    error={selectedChannelsError}
-                                />
-                            )}
+                            name='channels'
                         />)}
+                    {errors.channels && <Typography variant="h6">{errors.channels.message}</Typography>}
+                    {errors.playlistTitle && <Typography>{errors.playlistTitle.message}</Typography>}
+                    {errors.seasonTitle && <Typography>{errors.seasonTitle.message}</Typography>}
+                    {errors.seriesTitle && <Typography>{errors.seriesTitle.message}</Typography>}
                     <Button color='secondary' variant="contained" style={{ borderRadius: '8px' }} type="submit">
                         Submit
                     </Button>
