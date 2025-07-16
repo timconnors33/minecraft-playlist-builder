@@ -6,34 +6,21 @@ import { Control, Controller } from "react-hook-form";
 
 interface Props {
     channels: Channel[];
-    error: boolean;
     control: Control<PlaylistFormInput>;
-    name: string;
 }
 
-export const ChannelForm = ({ channels, error, control, name }: Props) => {
-
-    const [isError, setIsError] = useState<boolean>(error);
-
-    useEffect(() => {
-        setIsError(error);
-    }, [error]);
-
+export const ChannelForm = ({ channels, control }: Props) => {
     return (
         <div style={{ overflowX: 'hidden', overflowY: 'auto', maxHeight: '75vh' }}>
-            <FormControl required error={isError}>
+            <FormControl required>
                 <FormHelperText>Channels (Pick between 1 and 5)</FormHelperText>
                 <FormGroup id='channel-checkboxes' >
                     <Controller
                         name='channels'
                         control={control}
                         rules={{
-                            // TODO: Change error message
-                            //required: { value: true, message: "Channel is required" },
-                            /* minLength: { value: 1, message: "Please select at least one channel" },
-                            maxLength: { value: 5, message: "You may only select up to 5 channels" }, */
                             validate: value => {
-                                return ((value.length > 1) ? 
+                                return ((value.length >= 1) ? 
                                 (value.length <= 5 || 'You may only select up to 5 channels') :
                                 'Please select at least 1 channel')
                             },
@@ -45,7 +32,6 @@ export const ChannelForm = ({ channels, error, control, name }: Props) => {
                                         isChecked={field.value?.includes(channel.channelName)}
                                         channel={channel}
                                         key={channel.channelName}
-                                        name={channel.channelName}
                                         onChange={(event) => {
                                             const isChecked: boolean = event.target.checked;
                                             const valueArray = field.value || [];

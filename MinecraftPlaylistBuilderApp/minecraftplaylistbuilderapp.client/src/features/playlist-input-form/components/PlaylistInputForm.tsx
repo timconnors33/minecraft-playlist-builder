@@ -1,4 +1,4 @@
-import { Button, FormGroup, FormHelperText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
+import { Alert, Button, FormGroup, FormHelperText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload, CreatePlaylistPayload, Playlist, PlaylistFormInput } from "../../../types/api";
 import SeasonSelect from "./SeasonSelect";
@@ -33,14 +33,16 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
     const [selectedSeason, setSelectedSeason] = useState<Season>(seasons[0]);
 
     const [channels, setChannels] = useState<Channel[]>(selectedSeason.channels);
-    const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
+    /* const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]); */
 
     let navigate = useNavigate();
 
     const { error, execute } = useFetchWithMsal({ scopes: [protectedResources.playlistApi.scopes.write, protectedResources.playlistVideoApi.scopes.write] });
     const queryClient = useQueryClient();
 
-    const [selectedChannelsError, setSelectedChannelsError] = useState<boolean>((selectedChannels.length < 1) || (selectedChannels.length > 5));
+    const [isFormError, setIsFormError] = useState<boolean>(false);
+
+    /* const [selectedChannelsError, setSelectedChannelsError] = useState<boolean>((selectedChannels.length < 1) || (selectedChannels.length > 5)); */
 
     const { control, handleSubmit, formState: { errors } } = useForm({
         defaultValues: {
@@ -153,7 +155,21 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
     }
 
-    const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const formErrorMessage = (message: string) => {
+        return (
+            <Alert variant="outlined" severity="error">
+                {message}
+            </Alert>
+        )
+    }
+
+    useEffect(() => {
+        console.log(errors);
+        setIsFormError(!!errors);
+        console.log(`Form error: ${!!errors}`)
+    }, [errors])
+
+    /* const handleChannelCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const channelName = event.target.name;
         let newSelectedChannels: Channel[] = selectedChannels;
         const channel = channels.find((selectedChannel: Channel) => selectedChannel.channelName === channelName)
@@ -168,7 +184,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
         }
         setSelectedChannels(newSelectedChannels);
         setSelectedChannelsError((newSelectedChannels.length < 1) || (newSelectedChannels.length > 5));
-    }
+    } */
 
     useEffect(() => {
         const fetchChannels = () => {
@@ -198,10 +214,11 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         name="playlistTitle"
                         control={control}
                         rules={{
-                            required: true,
-                            minLength: 1,
-                            maxLength: 64,
-                            pattern: /^\w+( \w+)*$/
+                            minLength: {value: 1, message: 'Please enter a title for your playlist'},
+                            maxLength: {value: 64, message: 'Your playlist title may only be up to 64 characters long'},
+                            // TODO: This regex seems a bit silly and will show an error if someone has typed a space between typing their second word. 
+                            // Simplify it?
+                            pattern: {value: /^\w+( \w+)*$/, message: 'Your playlist title may contain only letters, numbers, underscores, and spaces'}
                         }}
                         render={({ field }) => (
                             <TextField
@@ -216,6 +233,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         <Controller
                             name='seriesTitle'
                             control={control}
+                            rules={{
+                                required: {value: true, message: 'Please select a series'}
+                            }}
                             render={({ field }) => (
                                 <div>
                                     <FormHelperText>Series</FormHelperText>
@@ -247,6 +267,9 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         <Controller
                             name='seasonTitle'
                             control={control}
+                            rules={{
+                                required: {value: true, message: 'Please select a season'}
+                            }}
                             render={({ field }) => (
                                 <div>
                                     <FormHelperText>Season</FormHelperText>
@@ -264,7 +287,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                                                 }
                                                 setSelectedSeason(season);
                                                 setChannels([]);
-                                                setSelectedChannels([]);
+                                                //setSelectedChannels([]);
                                             }
                                         }}
                                     >
@@ -279,19 +302,25 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                     {channels && (
                         <ChannelForm
                             channels={channels}
-                            error={selectedChannelsError}
                             control={control}
-                            name='channels'
                         />)}
-                    {errors.channels && <Typography variant="h6">{errors.channels.message}</Typography>}
+                    {/* {errors.channels && <Typography variant="h6">{errors.channels.message}</Typography>}
                     {errors.playlistTitle && <Typography>{errors.playlistTitle.message}</Typography>}
                     {errors.seasonTitle && <Typography>{errors.seasonTitle.message}</Typography>}
-                    {errors.seriesTitle && <Typography>{errors.seriesTitle.message}</Typography>}
+                    {errors.seriesTitle && <Typography>{errors.seriesTitle.message}</Typography>} */}
                     <Button color='secondary' variant="contained" style={{ borderRadius: '8px' }} type="submit">
                         Submit
                     </Button>
                 </form>
             </BackgroundPaper>
+            {(errors.channels || errors.playlistTitle || errors.seriesTitle || errors.seasonTitle) && (
+                    <Alert variant='filled' severity="error" style={{position: 'sticky', bottom: 0, zIndex: 1000}}>
+                        <div className="MuiAlert-message">{errors.playlistTitle?.message}</div>
+                        <div className="MuiAlert-message">{errors.seriesTitle?.message}</div>
+                        <div className="MuiAlert-message">{errors.seasonTitle?.message}</div>
+                        <div className="MuiAlert-message">{errors.channels?.message}</div>
+                    </Alert>
+                )}
         </AuthenticatedTemplate>
     );
 }
