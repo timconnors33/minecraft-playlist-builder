@@ -1,10 +1,7 @@
 import { Alert, Button, FormGroup, FormHelperText, MenuItem, Select, SelectChangeEvent, TextField, Typography } from "@mui/material";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Series, Season, Channel, SeasonAppearance, Video, GetVideosPayload, CreatePlaylistPayload, Playlist, PlaylistFormInput } from "../../../types/api";
-import SeasonSelect from "./SeasonSelect";
-import SeriesSelect from "./SeriesSelect";
 import '../PlaylistInputForm.css'
-import ChannelCheckbox from "./ChannelCheckbox";
 import { useNavigate } from "react-router"
 import { AuthenticatedTemplate } from "@azure/msal-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -214,6 +211,7 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         name="playlistTitle"
                         control={control}
                         rules={{
+                            required: {value: true, message: 'Please enter a title for your playlist'},
                             minLength: {value: 1, message: 'Please enter a title for your playlist'},
                             maxLength: {value: 64, message: 'Your playlist title may only be up to 64 characters long'},
                             // TODO: This regex seems a bit silly and will show an error if someone has typed a space between typing their second word. 
@@ -223,7 +221,6 @@ const PlaylistInputForm = ({ seasonAppearance }: Props) => {
                         render={({ field }) => (
                             <TextField
                                 {...field}
-                                required
                                 id='outline-required'
                                 label='Playlist Title'
                             />)

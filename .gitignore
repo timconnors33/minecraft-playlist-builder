@@ -16,3 +16,6 @@ node_modules
 node_modules/
 .user
 .sln
+.coverage
+.pytest_cache
+__pycache__/
