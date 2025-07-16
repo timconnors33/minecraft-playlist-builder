@@ -6,17 +6,18 @@ import DOMPurify from "dompurify";
 
 interface Props {
     channel: Channel;
+    isChecked: boolean;
     onChange: (event: ChangeEvent<HTMLInputElement>) => void;
 }
 
-const ChannelCheckbox = ({ channel, onChange }: Props) => {
+const ChannelCheckbox = ({ channel, isChecked, onChange }: Props) => {
     const pureChannelName = DOMPurify.sanitize(channel.channelName);
     // https://upmostly.com/tutorials/how-to-checkbox-onchange-react-js
     return (
         <FormControlLabel
             control={
                 // TODO: Do I need key here?
-                <Checkbox name={DOMPurify.sanitize(pureChannelName)} onChange={onChange} key={pureChannelName}/>
+                <Checkbox name={pureChannelName} checked={isChecked} onChange={onChange}/>
             }
             label={pureChannelName}
         />

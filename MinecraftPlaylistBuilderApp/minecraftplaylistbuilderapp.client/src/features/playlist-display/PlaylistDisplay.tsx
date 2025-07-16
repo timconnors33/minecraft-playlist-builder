@@ -5,7 +5,7 @@ import PaginatedList from "../../components/PaginatedList";
 import useFetchWithMsal from "../../utils/useFetchWithMsal";
 import { protectedResources } from "../../utils/authConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircularProgress, Divider, Paper } from "@mui/material";
+import { CircularProgress, Divider, Paper, Typography } from "@mui/material";
 import { BackgroundPaper } from "../../components/BackgroundPaper";
 import LoadingOverlay from "../../components/LoadingOverlay";
 
@@ -26,12 +26,18 @@ function PlaylistDisplay() {
         enabled: !!result,
     });
 
+    const [playlistCount, setPlaylistCount] = useState<number>(playlists.length);
+
     const playlistCards = useMemo(() => {
         console.log(playlists);
         return playlists.map((playlist) => (
             <PlaylistCard key={playlist.playlistId} playlist={playlist}/>
         ));
     }, [playlists]);
+
+    useEffect(() => {
+        setPlaylistCount(playlists.length);
+    }, [playlists])
 
     if (isLoading) { return <LoadingOverlay />; }
 
@@ -43,6 +49,7 @@ function PlaylistDisplay() {
     return (
         <BackgroundPaper>
             <h1>Playlists</h1>
+            <Typography style={{textAlign: 'end'}} variant="h6">{playlistCount}/10 Playlists</Typography>
             <Divider/>
             {playlistCards !== null && <PaginatedList children={playlistCards} />}
         </BackgroundPaper>

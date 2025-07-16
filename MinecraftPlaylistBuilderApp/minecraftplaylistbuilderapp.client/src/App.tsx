@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BASE_API_URL } from './utils/config';
 import { darkTheme } from './Theme';
 import LoadingOverlay from './components/LoadingOverlay';
+import { Landing } from './components/Landing';
 
 function Layout() {
     return (
@@ -52,7 +53,8 @@ const App = ({ instance }) => {
                     <CssBaseline />
                     <Routes>
                         <Route path="/" element={<Layout />}>
-                            <Route index element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <LoadingOverlay />} />
+                            <Route index element={<Landing />} />
+                            <Route path="create-playlist" element={seasonAppearance ? <PlaylistInputForm seasonAppearance={seasonAppearance} /> : <LoadingOverlay />} />
                             <Route path="playlists/:playlistId" element={<PlaylistVideoDisplay />} />
                             <Route path="auth-response" element={<div>Authenticated!</div>} />
                             <Route path="playlists" element={<PlaylistDisplay />} />

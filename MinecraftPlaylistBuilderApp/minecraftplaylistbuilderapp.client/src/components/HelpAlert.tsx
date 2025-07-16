@@ -30,9 +30,11 @@ const HelpAlert = () => {
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="help-alert-dialog-description">
-                        This tool helps you build a customized playlist for various Minecraft multiplayer YouTube series. 
-                        It sorts the videos by the time they were uploaded. Here's how to use it:
+                        Here's how to use make and use your playlist:
                         <ol>
+                            <li>
+                                Sign in and click the "Create Playlist" button at the top of the page.
+                            </li>
                             <li>
                                 Use the drop-down menus to select the series and season of your choice.
                             </li>
@@ -40,10 +42,12 @@ const HelpAlert = () => {
                                 Choose all the channels you'd like to include in the playlist.
                             </li>
                             <li>
-                                Hit the submit button and follow the instructions to log in to your YouTube account.
+                                Hit the submit button. Your playlist will now be available. You can navigate to your playlists at any time using the "View Playlists" button.
+                            </li>
+                            <li>
+                                Click on your playlist title to see all its videos. You can click the video title to be taken to its YouTube page. After your done watching, just mark the video as watched!
                             </li>
                         </ol>
-                        When your done, your playlist should be created on your YouTube account!
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
