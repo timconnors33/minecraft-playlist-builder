@@ -23,16 +23,18 @@ def filterCurrentSeasons(df):
     return new_df
 
 def filterDev(df):
-    new_df = df.drop(df[df['season_title'] != 'Season 9'].index)
-    # Scar's, Bdub's, and Ethos's season 9 videos
-    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab']
+    filtered_seasons = ['Season 9', '3rd Life']
+    new_df = df[df['season_title'].isin(filtered_seasons)]
+    # Scar's, Bdub's, and Ethos's season 9 videos and Scar's and Etho's Third Life videos
+    allowed_links = ['PLSCZsQa9VSCc-7-qOc8O7t9ZraR4L5y0Y', 'PL2XncHqN_7yJhlp6JgHAQG4M5LJmhmZlW', 'EthosLab', 
+                     'PLSCZsQa9VSCf4dGJL_0U1wt2UaPhUbTqB', '@EthosLab']
     new_df = new_df[new_df['youtube_internal_link'].isin(allowed_links)]
-    scar_third_life = [{'series_title': 'Life Series',
-                        'season_title': 'Third Life',
-                        'is_current_season': 'False',
-                        'youtube_internal_link': 'PLSCZsQa9VSCf4dGJL_0U1wt2UaPhUbTqB',
-                        'link_type': 'playlist'}]
-    new_df = pd.concat([new_df, pd.DataFrame(scar_third_life)])
+    return new_df
+
+# I believe these seasons generally contain only one video from each creator anyway, so it's not necessary to include them.
+def filterSpecials(df):
+    excluded_seasons = ['Real Life', 'Simple Life']
+    new_df = df.drop(df[df['season_title'].isin(excluded_seasons)].index)
     return new_df
 
 def runDev():
@@ -61,8 +63,14 @@ def runAllSeasons():
     print('Fetching data for all seasons')
     df = wiki_parser.wiki_parser.parse()
     writeToCsv(df=df, filepath='./data/raw-wiki-data.csv')
+    print('Filtering wiki data')
+    df = filterSpecials(df=df)
+    writeToCsv(df=df, filepath='./data/filtered-wiki-data.csv')
+    print('Getting YouTube video metadata')
     youtube_metadata_df = youtube_api_handler.processWikiData(df=df)
     writeToCsv(youtube_metadata_df, './data/video-metadata.csv')
+    print('Uploading data to database')
     loader.uploadData(video_metadata_df=youtube_metadata_df)
 
 #cProfile.run('runDev()')
+runAllSeasons()
